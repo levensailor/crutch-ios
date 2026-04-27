@@ -6,7 +6,7 @@ const publicLyricsCacheControl = "public, s-maxage=60, stale-while-revalidate=30
 
 export async function GET(request: NextRequest) {
   const payload = await getPublicLyricsPayload();
-  const eTag = `"lyrics-${payload.checksum}"`;
+  const eTag = `"lyrics-${payload.version}-${payload.checksum}"`;
 
   if (request.headers.get("if-none-match") === eTag) {
     return new Response(null, {
