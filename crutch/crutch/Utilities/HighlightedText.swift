@@ -171,23 +171,56 @@ struct HighlightedText: UIViewRepresentable {
 // New view for displaying attributed strings directly
 struct AttributedText: UIViewRepresentable {
     let attributedString: NSAttributedString
+    var topRightExclusionSize: CGSize = .zero
     
     func makeUIView(context: Context) -> UITextView {
-        let textView = UITextView()
+        let textView = WrappingTextView()
         textView.isEditable = false
         textView.isScrollEnabled = false
         textView.backgroundColor = .white
         configureWrapping(for: textView)
+        textView.topRightExclusionSize = topRightExclusionSize
         return textView
     }
     
     func updateUIView(_ uiView: UITextView, context: Context) {
         uiView.attributedText = attributedString
+        (uiView as? WrappingTextView)?.topRightExclusionSize = topRightExclusionSize
         uiView.setNeedsLayout()
     }
     
     func sizeThatFits(_ proposal: ProposedViewSize, uiView: UITextView, context: Context) -> CGSize? {
         return wrappingSizeThatFits(proposal, uiView: uiView)
+    }
+}
+
+private final class WrappingTextView: UITextView {
+    var topRightExclusionSize: CGSize = .zero {
+        didSet {
+            updateExclusionPath()
+        }
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        updateExclusionPath()
+    }
+    
+    private func updateExclusionPath() {
+        guard topRightExclusionSize.width > 0,
+              topRightExclusionSize.height > 0,
+              bounds.width > topRightExclusionSize.width else {
+            textContainer.exclusionPaths = []
+            return
+        }
+        
+        let exclusionRect = CGRect(
+            x: bounds.width - topRightExclusionSize.width,
+            y: 0,
+            width: topRightExclusionSize.width,
+            height: topRightExclusionSize.height
+        )
+        textContainer.exclusionPaths = [UIBezierPath(rect: exclusionRect)]
     }
 }
 

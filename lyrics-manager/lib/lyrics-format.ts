@@ -7,6 +7,16 @@ export type PublicLyricsPayload = {
   updatedAt: string;
   checksum: string;
   markdown: string;
+  songs: PublicLyricsSong[];
+};
+
+export type PublicLyricsSong = {
+  id: string;
+  title: string;
+  lyrics: string;
+  startsOn: string;
+  sortOrder: number;
+  updatedAt: string;
 };
 
 export type ParsedLyricsPage = {
@@ -41,6 +51,14 @@ export function publicLyricsPayload(songs: SongRecord[]): PublicLyricsPayload {
     updatedAt,
     checksum: checksumMarkdown(markdown),
     markdown,
+    songs: songs.map((song) => ({
+      id: song.id,
+      title: song.title,
+      lyrics: song.lyrics,
+      startsOn: song.startsOn,
+      sortOrder: song.sortOrder,
+      updatedAt: song.updatedAt,
+    })),
   };
 }
 

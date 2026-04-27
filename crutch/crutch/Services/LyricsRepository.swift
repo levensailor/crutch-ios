@@ -12,6 +12,30 @@ struct PublicLyricsPayload: Codable, Equatable {
     let updatedAt: String
     let checksum: String
     let markdown: String
+    let songs: [PublicLyricsSongPayload]?
+    
+    init(
+        version: Int,
+        updatedAt: String,
+        checksum: String,
+        markdown: String,
+        songs: [PublicLyricsSongPayload]? = nil
+    ) {
+        self.version = version
+        self.updatedAt = updatedAt
+        self.checksum = checksum
+        self.markdown = markdown
+        self.songs = songs
+    }
+}
+
+struct PublicLyricsSongPayload: Codable, Equatable {
+    let id: String
+    let title: String
+    let lyrics: String
+    let startsOn: String?
+    let sortOrder: Int?
+    let updatedAt: String?
 }
 
 private struct CachedLyricsPayload: Codable {
@@ -51,11 +75,11 @@ final class LyricsRepository {
 
     func loadSongs() async -> [Song] {
         if let remotePayload = try? await fetchRemotePayload() {
-            return SongLoader.parseMarkdown(remotePayload.markdown)
+            return songs(from: remotePayload)
         }
 
         if let cachedPayload = loadCachedPayload() {
-            return SongLoader.parseMarkdown(cachedPayload.markdown)
+            return songs(from: cachedPayload)
         }
 
         return SongLoader.loadBundledSongs()
@@ -110,6 +134,17 @@ final class LyricsRepository {
         guard payload.checksum == computedChecksum else {
             throw URLError(.cannotDecodeContentData)
         }
+        
+        if let songs = payload.songs {
+            let hasInvalidSong = songs.contains { song in
+                song.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
+                song.lyrics.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            }
+            
+            guard !hasInvalidSong else {
+                throw URLError(.cannotParseResponse)
+            }
+        }
     }
 
     private func cache(_ payload: PublicLyricsPayload, eTag: String?) throws {
@@ -144,5 +179,21 @@ final class LyricsRepository {
         }
 
         return URL(string: trimmedValue)
+    }
+    
+    private func songs(from payload: PublicLyricsPayload) -> [Song] {
+        guard let payloadSongs = payload.songs, !payloadSongs.isEmpty else {
+            return SongLoader.parseMarkdown(payload.markdown)
+        }
+        
+        return payloadSongs.map { payloadSong in
+            let startsOn = payloadSong.startsOn?.trimmingCharacters(in: .whitespacesAndNewlines)
+            return Song(
+                id: UUID(uuidString: payloadSong.id) ?? UUID(),
+                title: payloadSong.title,
+                lyrics: payloadSong.lyrics.replacingOccurrences(of: "\\n", with: "\n"),
+                startsOn: startsOn?.isEmpty == true ? nil : startsOn
+            )
+        }
     }
 }

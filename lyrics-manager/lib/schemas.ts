@@ -5,6 +5,7 @@ export const songIdSchema = z.string().uuid();
 export const songInputSchema = z.object({
   title: z.string().trim().min(1, "Song title is required."),
   lyrics: z.string().transform((value) => value.replaceAll("\r\n", "\n")),
+  startsOn: z.string().trim().default(""),
   sortOrder: z.coerce.number().int().min(0).default(0),
 });
 

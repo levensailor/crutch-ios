@@ -42,11 +42,12 @@ describe("lyrics format", () => {
   });
 
   it("builds a public payload with a checksum over the exact markdown", () => {
-    const songs = [song({ title: "Checksum Song", lyrics: "lyric" })];
+    const songs = [song({ title: "Checksum Song", lyrics: "lyric", startsOn: "Bm" })];
     const payload = publicLyricsPayload(songs);
 
     expect(payload.markdown).toBe("# Checksum Song\n###\nlyric\n###");
     expect(payload.checksum).toBe(checksumMarkdown(payload.markdown));
+    expect(payload.songs[0].startsOn).toBe("Bm");
     expect(payload.version).toBeGreaterThan(0);
   });
 });
@@ -56,6 +57,7 @@ function song(overrides: Partial<SongRecord>): SongRecord {
     id: "00000000-0000-4000-8000-000000000000",
     title: "Song",
     lyrics: "",
+    startsOn: "",
     sortOrder: 0,
     createdAt: "2026-04-27T00:00:00.000Z",
     updatedAt: "2026-04-27T00:00:00.000Z",

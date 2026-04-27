@@ -21,7 +21,8 @@ The Vercel app lives in `lyrics-manager/`. It provides:
 - Public song CRUD: create, read, update, and delete songs by clicking a song name.
 - A cacheable public feed for the iOS app at `/api/public/lyrics`.
 - A live iPhone 16 Pro screen simulator on the edit page.
-- A writing guide that explains page markers and highlight markers.
+- Toolbar actions for highlight cues and automatic page-break insertion.
+- A song-level "Starts on" field that renders under the iOS back button.
 
 Editing is intentionally public in this version. Anyone with the URL can change lyrics.
 
@@ -29,7 +30,7 @@ Editing is intentionally public in this version. Anyone with the URL can change 
 
 1. Create a Vercel project with `lyrics-manager/` as the project root.
 2. Add a Neon Postgres store from the Vercel Marketplace.
-3. Run `lyrics-manager/db/001_create_songs.sql` manually against the Neon database.
+3. Run `lyrics-manager/db/001_create_songs.sql` and later numbered migration files manually against the Neon database.
 4. Ensure `DATABASE_URL` is configured in the Vercel project.
 5. Deploy the Vercel project.
 6. Set `LyricsPublicURL` in `crutch/crutch/Resources/AppConfig.plist` to the deployed public feed URL, for example `https://your-project.vercel.app/api/public/lyrics`.

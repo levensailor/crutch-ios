@@ -13,6 +13,7 @@ type SongRow = {
   id: string;
   title: string;
   lyrics: string;
+  starts_on: string;
   sort_order: number;
   created_at: Date | string;
   updated_at: Date | string;
@@ -21,7 +22,7 @@ type SongRow = {
 export async function listSongs(): Promise<SongRecord[]> {
   const sql = getSql();
   const rows = (await sql`
-    select id, title, lyrics, sort_order, created_at, updated_at
+    select id, title, lyrics, starts_on, sort_order, created_at, updated_at
     from songs
     order by sort_order asc, title asc
   `) as SongRow[];
@@ -33,7 +34,7 @@ export async function getSong(id: string): Promise<SongRecord | null> {
   const parsedId = songIdSchema.parse(id);
   const sql = getSql();
   const rows = (await sql`
-    select id, title, lyrics, sort_order, created_at, updated_at
+    select id, title, lyrics, starts_on, sort_order, created_at, updated_at
     from songs
     where id = ${parsedId}
     limit 1
@@ -46,9 +47,9 @@ export async function createSong(input: SongInput): Promise<SongRecord> {
   const parsedInput = songInputSchema.parse(input);
   const sql = getSql();
   const rows = (await sql`
-    insert into songs (title, lyrics, sort_order)
-    values (${parsedInput.title}, ${parsedInput.lyrics}, ${parsedInput.sortOrder})
-    returning id, title, lyrics, sort_order, created_at, updated_at
+    insert into songs (title, lyrics, starts_on, sort_order)
+    values (${parsedInput.title}, ${parsedInput.lyrics}, ${parsedInput.startsOn}, ${parsedInput.sortOrder})
+    returning id, title, lyrics, starts_on, sort_order, created_at, updated_at
   `) as SongRow[];
 
   return songRowToRecord(rows[0]);
@@ -62,9 +63,10 @@ export async function updateSong(id: string, input: SongInput): Promise<SongReco
     update songs
     set title = ${parsedInput.title},
         lyrics = ${parsedInput.lyrics},
+        starts_on = ${parsedInput.startsOn},
         sort_order = ${parsedInput.sortOrder}
     where id = ${parsedId}
-    returning id, title, lyrics, sort_order, created_at, updated_at
+    returning id, title, lyrics, starts_on, sort_order, created_at, updated_at
   `) as SongRow[];
 
   return rows[0] ? songRowToRecord(rows[0]) : null;
@@ -105,6 +107,7 @@ export function songFormDataToInput(formData: FormData): SongInput {
   return songInputSchema.parse({
     title: formData.get("title"),
     lyrics: formData.get("lyrics") ?? "",
+    startsOn: formData.get("startsOn") ?? "",
     sortOrder: formData.get("sortOrder") ?? 0,
   });
 }
@@ -114,6 +117,7 @@ function songRowToRecord(row: SongRow): SongRecord {
     id: row.id,
     title: row.title,
     lyrics: row.lyrics,
+    startsOn: row.starts_on,
     sortOrder: row.sort_order,
     createdAt: toIsoString(row.created_at),
     updatedAt: toIsoString(row.updated_at),

@@ -12,6 +12,7 @@ type LyricsEditorProps = {
 
 export function LyricsEditor({ song, saveAction, deleteAction }: LyricsEditorProps) {
   const [title, setTitle] = useState(song?.title ?? "");
+  const [startsOn, setStartsOn] = useState(song?.startsOn ?? "");
   const [lyrics, setLyrics] = useState(song?.lyrics ?? "");
   const [pageIndex, setPageIndex] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -92,6 +93,18 @@ export function LyricsEditor({ song, saveAction, deleteAction }: LyricsEditorPro
               name="sortOrder"
               type="number"
               defaultValue={song?.sortOrder ?? 0}
+            />
+          </div>
+
+          <div className="field-stack">
+            <label htmlFor="startsOn">Starts on</label>
+            <input
+              className="input"
+              id="startsOn"
+              name="startsOn"
+              onChange={(event) => setStartsOn(event.target.value)}
+              placeholder="C or Bm"
+              value={startsOn}
             />
           </div>
 

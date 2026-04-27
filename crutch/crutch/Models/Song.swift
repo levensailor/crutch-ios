@@ -4,11 +4,13 @@ struct Song: Identifiable {
     let id: UUID
     let title: String
     let lyrics: String
+    let startsOn: String?
     
-    init(id: UUID = UUID(), title: String, lyrics: String) {
+    init(id: UUID = UUID(), title: String, lyrics: String, startsOn: String? = nil) {
         self.id = id
         self.title = title
         self.lyrics = lyrics
+        self.startsOn = startsOn
     }
 }
 

@@ -98,6 +98,46 @@ struct crutchTests {
         #expect(cachedSongs.map(\.title) == ["Remote Song"])
     }
     
+    @Test func repositoryPrefersStructuredSongsWhenAvailable() async throws {
+        let markdown = """
+        # Markdown Song
+        ###
+        markdown line
+        ###
+        """
+        let payload = PublicLyricsPayload(
+            version: 1,
+            updatedAt: "2026-04-27T00:00:00Z",
+            checksum: sha256(markdown),
+            markdown: markdown,
+            songs: [
+                PublicLyricsSongPayload(
+                    id: "00000000-0000-4000-8000-000000000000",
+                    title: "Structured Song",
+                    lyrics: "structured line",
+                    startsOn: "Bm",
+                    sortOrder: 0,
+                    updatedAt: "2026-04-27T00:00:00Z"
+                )
+            ]
+        )
+        let data = try JSONEncoder().encode(payload)
+        let fetcher = MockLyricsFetcher(results: [
+            .success(data, statusCode: 200, headers: [:])
+        ])
+        let repository = LyricsRepository(
+            publicLyricsURL: URL(string: "https://example.com/api/public/lyrics")!,
+            session: fetcher,
+            cacheDirectory: temporaryDirectory()
+        )
+        
+        let songs = await repository.loadSongs()
+        
+        #expect(songs.map(\.title) == ["Structured Song"])
+        #expect(songs[0].startsOn == "Bm")
+        #expect(songs[0].lyrics == "structured line")
+    }
+    
     @Test func repositoryRejectsMalformedRemotePayload() async throws {
         let markdown = """
         # Bad Song

@@ -9,6 +9,10 @@ struct LyricsView: View {
     
     private let font = UIFont.systemFont(ofSize: 18, weight: .bold)
     private let minimumSwipeDistance: CGFloat = 50
+    private let backButtonSize: CGFloat = 30
+    private var topRightControlSize: CGSize {
+        CGSize(width: backButtonSize * 1.5, height: backButtonSize * 3)
+    }
     
     var body: some View {
         GeometryReader { geometry in
@@ -19,7 +23,10 @@ struct LyricsView: View {
                 if !pages.isEmpty {
                     VStack {
                         Spacer()
-                        AttributedText(attributedString: pages[currentPageIndex])
+                        AttributedText(
+                            attributedString: pages[currentPageIndex],
+                            topRightExclusionSize: topRightControlSize
+                        )
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                             .padding()
                         Spacer()
@@ -44,16 +51,9 @@ struct LyricsView: View {
                 VStack {
                     HStack {
                         Spacer()
-                        Button(action: {
-                            dismiss()
-                        }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.system(size: 30))
-                                .foregroundColor(.black)
-                                .padding()
-                        }
-                        .padding(.trailing, 20)
-                        .padding(.top, 10)
+                        topRightControl
+                            .padding(.trailing, 16)
+                            .padding(.top, 16)
                     }
                     Spacer()
                 }
@@ -77,6 +77,32 @@ struct LyricsView: View {
             )
         }
         .navigationBarHidden(true)
+    }
+    
+    private var topRightControl: some View {
+        VStack(spacing: 4) {
+            Button(action: {
+                dismiss()
+            }) {
+                Image(systemName: "chevron.left.circle.fill")
+                    .font(.system(size: backButtonSize))
+                    .foregroundColor(.black)
+            }
+            .accessibilityLabel("Back")
+            
+            if let startsOn = song.startsOn, !startsOn.isEmpty {
+                Text(startsOn)
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(.black)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+            }
+        }
+        .frame(
+            width: topRightControlSize.width,
+            height: topRightControlSize.height,
+            alignment: .topTrailing
+        )
     }
     
     private func calculatePages() {
