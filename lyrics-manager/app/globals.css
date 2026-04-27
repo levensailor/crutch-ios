@@ -219,6 +219,13 @@ textarea {
   gap: 10px;
 }
 
+.editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
 .guide-list {
   display: grid;
   gap: 10px;

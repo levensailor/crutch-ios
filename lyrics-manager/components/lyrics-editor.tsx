@@ -15,6 +15,7 @@ export function LyricsEditor({ song, saveAction, deleteAction }: LyricsEditorPro
   const [lyrics, setLyrics] = useState(song?.lyrics ?? "");
   const [pageIndex, setPageIndex] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const saveFormId = song ? `song-save-${song.id}` : "song-save-new";
   const pages = useMemo(() => splitByPageMarkers(lyrics), [lyrics]);
   const currentPage = pages[Math.min(pageIndex, pages.length - 1)] ?? "";
   const currentPageLineCount = currentPage ? currentPage.split(/\r?\n/).length : 0;
@@ -69,7 +70,7 @@ export function LyricsEditor({ song, saveAction, deleteAction }: LyricsEditorPro
   return (
     <div className="editor-grid">
       <section className="panel">
-        <form action={saveAction}>
+        <form action={saveAction} id={saveFormId}>
           <div className="field-stack">
             <label htmlFor="title">Song name</label>
             <input
@@ -129,20 +130,20 @@ export function LyricsEditor({ song, saveAction, deleteAction }: LyricsEditorPro
             </p>
           </div>
 
-          <div className="action-row">
-            <button className="button" type="submit">
-              Save lyrics
-            </button>
-          </div>
         </form>
 
-        {deleteAction ? (
-          <form action={deleteAction} className="action-row" style={{ marginTop: 12 }}>
-            <button className="button danger" type="submit">
-              Delete song
-            </button>
-          </form>
-        ) : null}
+        <div className="editor-actions">
+          {deleteAction ? (
+            <form action={deleteAction}>
+              <button className="button danger" type="submit">
+                Delete song
+              </button>
+            </form>
+          ) : null}
+          <button className="button" form={saveFormId} type="submit">
+            Save lyrics
+          </button>
+        </div>
       </section>
 
       <aside>
