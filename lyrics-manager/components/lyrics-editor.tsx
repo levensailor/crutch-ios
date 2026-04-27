@@ -101,7 +101,7 @@ export function LyricsEditor({ song, saveAction, deleteAction }: LyricsEditorPro
                 className="simulated-lyrics"
                 dangerouslySetInnerHTML={{ __html: renderInlineMarkers(currentPage) }}
               />
-              <div className="muted">
+              <div className="simulator-page-count">
                 Page {Math.min(pageIndex + 1, pages.length)} / {pages.length}
               </div>
             </div>

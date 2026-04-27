@@ -180,7 +180,8 @@ textarea {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding: 28px 22px 18px;
+  padding: 16px;
+  position: relative;
 }
 
 .simulated-lyrics {
@@ -189,6 +190,15 @@ textarea {
   font-weight: 800;
   line-height: 1.18;
   white-space: pre-wrap;
+}
+
+.simulator-page-count {
+  bottom: 10px;
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 14px;
+  font-weight: 800;
+  position: absolute;
+  right: 18px;
 }
 
 .simulated-lyrics mark {
