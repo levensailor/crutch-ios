@@ -12,8 +12,7 @@ struct HighlightedText: UIViewRepresentable {
         textView.font = font
         textView.textColor = .black
         textView.backgroundColor = .white
-        textView.textContainerInset = .zero
-        textView.textContainer.lineFragmentPadding = 0
+        configureWrapping(for: textView)
         return textView
     }
     
@@ -145,6 +144,9 @@ struct HighlightedText: UIViewRepresentable {
         let fullRange = NSRange(location: 0, length: processedText.count)
         finalAttributedString.addAttribute(NSAttributedString.Key.font, value: font, range: fullRange)
         finalAttributedString.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.black, range: fullRange)
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineBreakMode = .byWordWrapping
+        finalAttributedString.addAttribute(NSAttributedString.Key.paragraphStyle, value: paragraphStyle, range: fullRange)
         
         // Apply highlights
         for highlight in allHighlightRanges {
@@ -170,14 +172,23 @@ struct AttributedText: UIViewRepresentable {
         textView.isEditable = false
         textView.isScrollEnabled = false
         textView.backgroundColor = .white
-        textView.textContainerInset = .zero
-        textView.textContainer.lineFragmentPadding = 0
+        configureWrapping(for: textView)
         return textView
     }
     
     func updateUIView(_ uiView: UITextView, context: Context) {
         uiView.attributedText = attributedString
     }
+}
+
+private func configureWrapping(for textView: UITextView) {
+    textView.textContainerInset = .zero
+    textView.textContainer.lineFragmentPadding = 0
+    textView.textContainer.lineBreakMode = .byWordWrapping
+    textView.textContainer.widthTracksTextView = true
+    textView.isSelectable = false
+    textView.showsHorizontalScrollIndicator = false
+    textView.alwaysBounceHorizontal = false
 }
 
 
