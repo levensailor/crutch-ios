@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { renderInlineMarkers, splitByPageMarkers } from "@/lib/lyrics-markers";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { autoAddPageMarkers, renderInlineMarkers, splitByPageMarkers } from "@/lib/lyrics-markers";
 import type { SongRecord } from "@/lib/schemas";
 
 type LyricsEditorProps = {
@@ -14,6 +14,7 @@ export function LyricsEditor({ song, saveAction, deleteAction }: LyricsEditorPro
   const [title, setTitle] = useState(song?.title ?? "");
   const [lyrics, setLyrics] = useState(song?.lyrics ?? "");
   const [pageIndex, setPageIndex] = useState(0);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const pages = useMemo(() => splitByPageMarkers(lyrics), [lyrics]);
   const currentPage = pages[Math.min(pageIndex, pages.length - 1)] ?? "";
   const currentPageLineCount = currentPage ? currentPage.split(/\r?\n/).length : 0;
@@ -22,6 +23,48 @@ export function LyricsEditor({ song, saveAction, deleteAction }: LyricsEditorPro
   useEffect(() => {
     setPageIndex(0);
   }, [lyrics]);
+
+  function wrapSelection(openMarker: string, closeMarker = openMarker) {
+    const textarea = textareaRef.current;
+
+    if (!textarea) {
+      return;
+    }
+
+    const selectionStart = textarea.selectionStart;
+    const selectionEnd = textarea.selectionEnd;
+    const selectedText = lyrics.slice(selectionStart, selectionEnd);
+
+    if (!selectedText) {
+      textarea.focus();
+      return;
+    }
+
+    const hasSelectedMarkers =
+      selectedText.startsWith(openMarker) && selectedText.endsWith(closeMarker);
+    const replacement = hasSelectedMarkers
+      ? selectedText.slice(openMarker.length, selectedText.length - closeMarker.length)
+      : `${openMarker}${selectedText}${closeMarker}`;
+    const nextLyrics =
+      lyrics.slice(0, selectionStart) + replacement + lyrics.slice(selectionEnd);
+
+    setLyrics(nextLyrics);
+
+    requestAnimationFrame(() => {
+      textarea.focus();
+      textarea.setSelectionRange(selectionStart, selectionStart + replacement.length);
+    });
+  }
+
+  function addAutomaticPageBreaks() {
+    const nextLyrics = autoAddPageMarkers(lyrics);
+    setLyrics(nextLyrics);
+    setPageIndex(0);
+
+    requestAnimationFrame(() => {
+      textareaRef.current?.focus();
+    });
+  }
 
   return (
     <div className="editor-grid">
@@ -53,13 +96,37 @@ export function LyricsEditor({ song, saveAction, deleteAction }: LyricsEditorPro
 
           <div className="field-stack">
             <label htmlFor="lyrics">Lyrics</label>
+            <div className="editor-toolbar" aria-label="Lyrics formatting tools">
+              <button
+                className="toolbar-button pink"
+                onClick={() => wrapSelection("**")}
+                type="button"
+              >
+                Pink cue
+              </button>
+              <button
+                className="toolbar-button green"
+                onClick={() => wrapSelection("~~")}
+                type="button"
+              >
+                Green cue
+              </button>
+              <button className="toolbar-button" onClick={addAutomaticPageBreaks} type="button">
+                Auto add page breaks
+              </button>
+            </div>
             <textarea
               className="textarea"
               id="lyrics"
               name="lyrics"
               onChange={(event) => setLyrics(event.target.value)}
+              ref={textareaRef}
               value={lyrics}
             />
+            <p className="editor-help">
+              Select text and choose a cue color. The editor saves markers so the iPhone app keeps
+              its current rendering behavior.
+            </p>
           </div>
 
           <div className="action-row">
@@ -84,10 +151,10 @@ export function LyricsEditor({ song, saveAction, deleteAction }: LyricsEditorPro
           <h2>Fit the performance screen</h2>
           <ul className="guide-list">
             <li>Use short lines. The app renders bold 18pt text in a non-scrolling page.</li>
+            <li>Use Auto add page breaks for a first pass, then adjust markers by hand.</li>
             <li>Insert a line with <strong>#####</strong> where the performer should turn pages.</li>
-            <li>Keep page breaks intentional. The app does not auto-split long lyrics.</li>
-            <li>Wrap <strong>**text**</strong> for pink highlight cues.</li>
-            <li>Wrap <strong>~~text~~</strong> for green highlight cues.</li>
+            <li>Select text and click Pink cue or Green cue instead of typing markers manually.</li>
+            <li>The saved text still uses <strong>**text**</strong> and <strong>~~text~~</strong> so iOS stays compatible.</li>
             <li>Use the simulator to catch pages that feel too dense before a show.</li>
           </ul>
         </section>

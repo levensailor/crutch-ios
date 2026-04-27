@@ -165,6 +165,38 @@ textarea {
   font-weight: 800;
 }
 
+.editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.toolbar-button {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--foreground);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 9px 12px;
+}
+
+.toolbar-button.pink {
+  background: rgba(255, 45, 130, 0.16);
+}
+
+.toolbar-button.green {
+  background: rgba(52, 199, 89, 0.18);
+}
+
+.editor-help {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+  margin: 0;
+}
+
 .input,
 .textarea {
   background: #ffffff;

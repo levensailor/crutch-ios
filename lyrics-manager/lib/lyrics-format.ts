@@ -1,6 +1,6 @@
 import { createHash } from "crypto";
 import type { SongRecord } from "./schemas";
-export { renderInlineMarkers, splitByPageMarkers } from "./lyrics-markers";
+export { autoAddPageMarkers, renderInlineMarkers, splitByPageMarkers } from "./lyrics-markers";
 
 export type PublicLyricsPayload = {
   version: number;

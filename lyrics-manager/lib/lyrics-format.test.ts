@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  autoAddPageMarkers,
   checksumMarkdown,
   publicLyricsPayload,
   songsToMarkdown,
@@ -20,6 +21,24 @@ describe("lyrics format", () => {
       "second",
       "third",
     ]);
+  });
+
+  it("auto-adds page markers without preserving old markers", () => {
+    expect(
+      autoAddPageMarkers("one\ntwo\n#####\nthree\nfour", {
+        maxLines: 2,
+        maxCharacters: 200,
+      })
+    ).toBe("one\ntwo\n#####\nthree\nfour");
+  });
+
+  it("auto-adds page markers when a page gets too many characters", () => {
+    expect(
+      autoAddPageMarkers("short\nthis line is too long for the configured page", {
+        maxLines: 10,
+        maxCharacters: 20,
+      })
+    ).toBe("short\n#####\nthis line is too long for the configured page");
   });
 
   it("builds a public payload with a checksum over the exact markdown", () => {
