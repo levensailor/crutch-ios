@@ -19,6 +19,11 @@ struct HighlightedText: UIViewRepresentable {
     func updateUIView(_ uiView: UITextView, context: Context) {
         let attributedString = createAttributedStringRebuilt(from: text, font: font)
         uiView.attributedText = attributedString
+        uiView.setNeedsLayout()
+    }
+    
+    func sizeThatFits(_ proposal: ProposedViewSize, uiView: UITextView, context: Context) -> CGSize? {
+        return wrappingSizeThatFits(proposal, uiView: uiView)
     }
     
     private func createAttributedString(from text: String, font: UIFont) -> NSAttributedString {
@@ -178,6 +183,11 @@ struct AttributedText: UIViewRepresentable {
     
     func updateUIView(_ uiView: UITextView, context: Context) {
         uiView.attributedText = attributedString
+        uiView.setNeedsLayout()
+    }
+    
+    func sizeThatFits(_ proposal: ProposedViewSize, uiView: UITextView, context: Context) -> CGSize? {
+        return wrappingSizeThatFits(proposal, uiView: uiView)
     }
 }
 
@@ -189,6 +199,17 @@ private func configureWrapping(for textView: UITextView) {
     textView.isSelectable = false
     textView.showsHorizontalScrollIndicator = false
     textView.alwaysBounceHorizontal = false
+    textView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+}
+
+private func wrappingSizeThatFits(_ proposal: ProposedViewSize, uiView: UITextView) -> CGSize? {
+    guard let width = proposal.width else {
+        return nil
+    }
+
+    let fittingSize = CGSize(width: width, height: CGFloat.greatestFiniteMagnitude)
+    let measuredSize = uiView.sizeThatFits(fittingSize)
+    return CGSize(width: width, height: measuredSize.height)
 }
 
 
