@@ -147,19 +147,6 @@ export function LyricsEditor({ song, saveAction, deleteAction }: LyricsEditorPro
       </section>
 
       <aside>
-        <section className="panel" style={{ marginBottom: 20 }}>
-          <div className="eyebrow">Writing guide</div>
-          <h2>Fit the performance screen</h2>
-          <ul className="guide-list">
-            <li>Use short lines. The app renders bold 18pt text in a non-scrolling page.</li>
-            <li>Use Auto add page breaks for a first pass, then adjust markers by hand.</li>
-            <li>Insert a line with <strong>#####</strong> where the performer should turn pages.</li>
-            <li>Select text and click Pink cue or Green cue instead of typing markers manually.</li>
-            <li>The saved text still uses <strong>**text**</strong> and <strong>~~text~~</strong> so iOS stays compatible.</li>
-            <li>Use the simulator to catch pages that feel too dense before a show.</li>
-          </ul>
-        </section>
-
         <section className="panel">
           <div className="eyebrow">iPhone 16 Pro simulator</div>
           <h2>{title || "Untitled song"}</h2>
