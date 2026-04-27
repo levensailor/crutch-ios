@@ -3,6 +3,6 @@
 <plist version="1.0">
 <dict>
 	<key>LyricsPublicURL</key>
-	<string></string>
+	<string>https://crutch-ios.vercel.app/api/public/lyrics</string>
 </dict>
 </plist>
