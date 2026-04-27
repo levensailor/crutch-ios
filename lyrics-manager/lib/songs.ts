@@ -13,11 +13,11 @@ type SongRow = {
 
 export async function listSongs(): Promise<SongRecord[]> {
   const sql = getSql();
-  const rows = await sql<SongRow[]>`
+  const rows = (await sql`
     select id, title, lyrics, sort_order, created_at, updated_at
     from songs
     order by sort_order asc, title asc
-  `;
+  `) as SongRow[];
 
   return rows.map(songRowToRecord);
 }
@@ -25,12 +25,12 @@ export async function listSongs(): Promise<SongRecord[]> {
 export async function getSong(id: string): Promise<SongRecord | null> {
   const parsedId = songIdSchema.parse(id);
   const sql = getSql();
-  const rows = await sql<SongRow[]>`
+  const rows = (await sql`
     select id, title, lyrics, sort_order, created_at, updated_at
     from songs
     where id = ${parsedId}
     limit 1
-  `;
+  `) as SongRow[];
 
   return rows[0] ? songRowToRecord(rows[0]) : null;
 }
@@ -38,11 +38,11 @@ export async function getSong(id: string): Promise<SongRecord | null> {
 export async function createSong(input: SongInput): Promise<SongRecord> {
   const parsedInput = songInputSchema.parse(input);
   const sql = getSql();
-  const rows = await sql<SongRow[]>`
+  const rows = (await sql`
     insert into songs (title, lyrics, sort_order)
     values (${parsedInput.title}, ${parsedInput.lyrics}, ${parsedInput.sortOrder})
     returning id, title, lyrics, sort_order, created_at, updated_at
-  `;
+  `) as SongRow[];
 
   return songRowToRecord(rows[0]);
 }
@@ -51,14 +51,14 @@ export async function updateSong(id: string, input: SongInput): Promise<SongReco
   const parsedId = songIdSchema.parse(id);
   const parsedInput = songInputSchema.parse(input);
   const sql = getSql();
-  const rows = await sql<SongRow[]>`
+  const rows = (await sql`
     update songs
     set title = ${parsedInput.title},
         lyrics = ${parsedInput.lyrics},
         sort_order = ${parsedInput.sortOrder}
     where id = ${parsedId}
     returning id, title, lyrics, sort_order, created_at, updated_at
-  `;
+  `) as SongRow[];
 
   return rows[0] ? songRowToRecord(rows[0]) : null;
 }
@@ -66,11 +66,11 @@ export async function updateSong(id: string, input: SongInput): Promise<SongReco
 export async function deleteSong(id: string): Promise<boolean> {
   const parsedId = songIdSchema.parse(id);
   const sql = getSql();
-  const rows = await sql<{ id: string }[]>`
+  const rows = (await sql`
     delete from songs
     where id = ${parsedId}
     returning id
-  `;
+  `) as Array<{ id: string }>;
 
   return rows.length > 0;
 }
