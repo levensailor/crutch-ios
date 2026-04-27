@@ -1,0 +1,11 @@
+## Learned User Preferences
+- Keep the iPhone 16 Pro web simulator visually aligned with the live iOS lyrics screen, including usable line count, padding, and overlaid page counter behavior.
+
+## Learned Workspace Facts
+- The workspace contains a SwiftUI iOS app under `crutch/` and a Next.js Vercel lyrics manager under `lyrics-manager/`.
+- Lyrics use a stable marker contract: `# Song Title`, `###` lyrics blocks, `#####` page breaks, `**text**` pink highlights, and `~~text~~` green highlights.
+- The iOS app loads remote lyrics through `LyricsRepository`, falling back to the last cached feed and then bundled `crutch/crutch/Resources/lyrics.md`.
+- Bluetooth page-turner support is handled as hardware keyboard arrow-key input through UIKit key commands, with SwiftUI swipe gestures as the fallback.
+- `lyrics-manager/` uses Next.js with Neon Postgres and exposes public song CRUD plus the cached `/api/public/lyrics` feed; editing is intentionally public.
+- SQL changes for the lyrics manager live under `lyrics-manager/db/` and are intended to be run manually against Neon.
+- The web simulator lives in the lyrics editor and targets iPhone 16 Pro layout; page count should be overlaid and padding should match iOS `.padding()`.
