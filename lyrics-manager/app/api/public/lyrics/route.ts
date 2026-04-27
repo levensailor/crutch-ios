@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPublicLyricsPayload } from "@/lib/songs";
 
+export const dynamic = "force-dynamic";
+const publicLyricsCacheControl = "public, s-maxage=60, stale-while-revalidate=300";
+
 export async function GET(request: NextRequest) {
   const payload = await getPublicLyricsPayload();
   const eTag = `"lyrics-${payload.checksum}"`;
@@ -10,7 +13,7 @@ export async function GET(request: NextRequest) {
       status: 304,
       headers: {
         ETag: eTag,
-        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
+        "Cache-Control": publicLyricsCacheControl,
       },
     });
   }
@@ -18,7 +21,7 @@ export async function GET(request: NextRequest) {
   return NextResponse.json(payload, {
     headers: {
       ETag: eTag,
-      "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
+      "Cache-Control": publicLyricsCacheControl,
     },
   });
 }

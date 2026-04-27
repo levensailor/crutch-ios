@@ -3,6 +3,8 @@ import { ZodError } from "zod";
 import { createSong, listSongs } from "@/lib/songs";
 import { songInputSchema } from "@/lib/schemas";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   return NextResponse.json({ songs: await listSongs() });
 }

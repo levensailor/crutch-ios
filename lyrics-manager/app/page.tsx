@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { listSongs } from "@/lib/songs";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const songs = await listSongs();
 

@@ -4,6 +4,8 @@ import { deleteSongAction, updateSongAction } from "@/app/actions";
 import { LyricsEditor } from "@/components/lyrics-editor";
 import { getSong } from "@/lib/songs";
 
+export const dynamic = "force-dynamic";
+
 type PageProps = {
   params: Promise<{
     id: string;
