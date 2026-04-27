@@ -75,6 +75,13 @@ textarea {
   padding: 0;
 }
 
+.sortable-song {
+  align-items: stretch;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 54px 1fr;
+}
+
 .song-list a {
   align-items: center;
   background: #ffffff;
@@ -84,6 +91,30 @@ textarea {
   justify-content: space-between;
   padding: 18px 20px;
   text-decoration: none;
+}
+
+.drag-handle {
+  align-items: center;
+  background: #ffffff;
+  border: 1px dashed var(--border);
+  border-radius: 18px;
+  color: var(--muted);
+  cursor: grab;
+  display: flex;
+  font-size: 16px;
+  font-weight: 900;
+  justify-content: center;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.sort-status {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 800;
+  margin: 14px 0 0;
 }
 
 .song-title {

@@ -14,5 +14,10 @@ export const songRecordSchema = songInputSchema.extend({
   updatedAt: z.string(),
 });
 
+export const songOrderSchema = z.object({
+  songIds: z.array(songIdSchema).min(1, "At least one song id is required."),
+});
+
 export type SongInput = z.infer<typeof songInputSchema>;
 export type SongRecord = z.infer<typeof songRecordSchema>;
+export type SongOrderInput = z.infer<typeof songOrderSchema>;

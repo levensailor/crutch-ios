@@ -1,6 +1,13 @@
 import { getSql } from "./db";
 import { publicLyricsPayload } from "./lyrics-format";
-import { songIdSchema, songInputSchema, type SongInput, type SongRecord } from "./schemas";
+import {
+  songIdSchema,
+  songInputSchema,
+  songOrderSchema,
+  type SongInput,
+  type SongOrderInput,
+  type SongRecord,
+} from "./schemas";
 
 type SongRow = {
   id: string;
@@ -73,6 +80,21 @@ export async function deleteSong(id: string): Promise<boolean> {
   `) as Array<{ id: string }>;
 
   return rows.length > 0;
+}
+
+export async function reorderSongs(input: SongOrderInput): Promise<SongRecord[]> {
+  const { songIds } = songOrderSchema.parse(input);
+  const sql = getSql();
+
+  for (const [sortOrder, songId] of songIds.entries()) {
+    await sql`
+      update songs
+      set sort_order = ${sortOrder}
+      where id = ${songId}
+    `;
+  }
+
+  return listSongs();
 }
 
 export async function getPublicLyricsPayload() {

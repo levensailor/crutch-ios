@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SortableSongList } from "@/components/sortable-song-list";
 import { listSongs } from "@/lib/songs";
 
 export const dynamic = "force-dynamic";
@@ -25,16 +26,7 @@ export default async function HomePage() {
         {songs.length === 0 ? (
           <p className="muted">No songs yet. Create the first song to publish the app feed.</p>
         ) : (
-          <ul className="song-list">
-            {songs.map((song) => (
-              <li key={song.id}>
-                <Link href={`/songs/${song.id}`}>
-                  <span className="song-title">{song.title}</span>
-                  <span className="muted">Edit lyrics</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <SortableSongList songs={songs} />
         )}
       </section>
     </main>
