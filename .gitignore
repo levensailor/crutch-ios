@@ -1,0 +1,32 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+.vercel
+
+# Node / Next.js
+node_modules
+.next
+out
+dist
+coverage
+*.tsbuildinfo
+
+# Swift / Xcode
+DerivedData
+*.xcuserstate
+xcuserdata
+*.moved-aside
+*.xcscmblueprint
+
+# Python
+.venv
+venv
+__pycache__
+*.pyc
+
+# Logs and artifacts
+*.log
+logs
+tmp
+.DS_Store
