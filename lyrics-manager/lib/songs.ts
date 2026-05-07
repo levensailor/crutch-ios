@@ -1,12 +1,16 @@
 import { getSql } from "./db";
 import { publicLyricsPayload } from "./lyrics-format";
 import {
+  EMPTY_SONG_TABS,
+  parseTabsJson,
   songIdSchema,
   songInputSchema,
   songOrderSchema,
+  songTabsSchema,
   type SongInput,
   type SongOrderInput,
   type SongRecord,
+  type SongTabs,
 } from "./schemas";
 
 type SongRow = {
@@ -15,6 +19,7 @@ type SongRow = {
   lyrics: string;
   starts_on: string;
   sort_order: number;
+  tabs: unknown;
   created_at: Date | string;
   updated_at: Date | string;
 };
@@ -22,7 +27,7 @@ type SongRow = {
 export async function listSongs(): Promise<SongRecord[]> {
   const sql = getSql();
   const rows = (await sql`
-    select id, title, lyrics, starts_on, sort_order, created_at, updated_at
+    select id, title, lyrics, starts_on, sort_order, tabs, created_at, updated_at
     from songs
     order by sort_order asc, title asc
   `) as SongRow[];
@@ -34,7 +39,7 @@ export async function getSong(id: string): Promise<SongRecord | null> {
   const parsedId = songIdSchema.parse(id);
   const sql = getSql();
   const rows = (await sql`
-    select id, title, lyrics, starts_on, sort_order, created_at, updated_at
+    select id, title, lyrics, starts_on, sort_order, tabs, created_at, updated_at
     from songs
     where id = ${parsedId}
     limit 1
@@ -46,10 +51,17 @@ export async function getSong(id: string): Promise<SongRecord | null> {
 export async function createSong(input: SongInput): Promise<SongRecord> {
   const parsedInput = songInputSchema.parse(input);
   const sql = getSql();
+  const tabsJson = JSON.stringify(parsedInput.tabs);
   const rows = (await sql`
-    insert into songs (title, lyrics, starts_on, sort_order)
-    values (${parsedInput.title}, ${parsedInput.lyrics}, ${parsedInput.startsOn}, ${parsedInput.sortOrder})
-    returning id, title, lyrics, starts_on, sort_order, created_at, updated_at
+    insert into songs (title, lyrics, starts_on, sort_order, tabs)
+    values (
+      ${parsedInput.title},
+      ${parsedInput.lyrics},
+      ${parsedInput.startsOn},
+      ${parsedInput.sortOrder},
+      ${tabsJson}::jsonb
+    )
+    returning id, title, lyrics, starts_on, sort_order, tabs, created_at, updated_at
   `) as SongRow[];
 
   return songRowToRecord(rows[0]);
@@ -59,14 +71,16 @@ export async function updateSong(id: string, input: SongInput): Promise<SongReco
   const parsedId = songIdSchema.parse(id);
   const parsedInput = songInputSchema.parse(input);
   const sql = getSql();
+  const tabsJson = JSON.stringify(parsedInput.tabs);
   const rows = (await sql`
     update songs
     set title = ${parsedInput.title},
         lyrics = ${parsedInput.lyrics},
         starts_on = ${parsedInput.startsOn},
-        sort_order = ${parsedInput.sortOrder}
+        sort_order = ${parsedInput.sortOrder},
+        tabs = ${tabsJson}::jsonb
     where id = ${parsedId}
-    returning id, title, lyrics, starts_on, sort_order, created_at, updated_at
+    returning id, title, lyrics, starts_on, sort_order, tabs, created_at, updated_at
   `) as SongRow[];
 
   return rows[0] ? songRowToRecord(rows[0]) : null;
@@ -109,6 +123,7 @@ export function songFormDataToInput(formData: FormData): SongInput {
     lyrics: formData.get("lyrics") ?? "",
     startsOn: formData.get("startsOn") ?? "",
     sortOrder: formData.get("sortOrder") ?? 0,
+    tabs: parseTabsJson(formData.get("tabs")),
   });
 }
 
@@ -119,9 +134,24 @@ function songRowToRecord(row: SongRow): SongRecord {
     lyrics: row.lyrics,
     startsOn: row.starts_on,
     sortOrder: row.sort_order,
+    tabs: normalizeTabs(row.tabs),
     createdAt: toIsoString(row.created_at),
     updatedAt: toIsoString(row.updated_at),
   };
+}
+
+function normalizeTabs(value: unknown): SongTabs {
+  if (value == null) {
+    return EMPTY_SONG_TABS;
+  }
+
+  if (typeof value === "string") {
+    return parseTabsJson(value);
+  }
+
+  const result = songTabsSchema.safeParse(value);
+
+  return result.success ? result.data : EMPTY_SONG_TABS;
 }
 
 function toIsoString(value: Date | string): string {

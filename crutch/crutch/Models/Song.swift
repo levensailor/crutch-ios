@@ -1,16 +1,48 @@
 import Foundation
 
+struct TabPlacement: Identifiable, Equatable {
+    let note: String
+    let x: Double
+    let y: Double
+    
+    var id: String { note }
+}
+
+struct TabPage: Equatable {
+    let pageIndex: Int
+    let notes: [TabPlacement]
+}
+
+struct SongTabs: Equatable {
+    let version: Int
+    let pages: [TabPage]
+    
+    static let empty = SongTabs(version: 1, pages: [])
+    
+    func placements(forPageIndex pageIndex: Int) -> [TabPlacement] {
+        pages.first(where: { $0.pageIndex == pageIndex })?.notes ?? []
+    }
+}
+
 struct Song: Identifiable {
     let id: UUID
     let title: String
     let lyrics: String
     let startsOn: String?
+    let tabs: SongTabs
     
-    init(id: UUID = UUID(), title: String, lyrics: String, startsOn: String? = nil) {
+    init(
+        id: UUID = UUID(),
+        title: String,
+        lyrics: String,
+        startsOn: String? = nil,
+        tabs: SongTabs = .empty
+    ) {
         self.id = id
         self.title = title
         self.lyrics = lyrics
         self.startsOn = startsOn
+        self.tabs = tabs
     }
 }
 
@@ -39,23 +71,19 @@ struct SongLoader {
         
         for line in lines {
             if line.hasPrefix("# ") {
-                // Save previous song if exists
                 if let title = currentTitle, !currentLyrics.isEmpty {
                     let lyrics = currentLyrics.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
                     let processedLyrics = lyrics.replacingOccurrences(of: "\\n", with: "\n")
                     songs.append(Song(title: title, lyrics: processedLyrics))
                 }
                 
-                // Start new song
                 currentTitle = String(line.dropFirst(2)).trimmingCharacters(in: .whitespacesAndNewlines)
                 currentLyrics = []
                 inLyricsBlock = false
             } else if line.trimmingCharacters(in: .whitespaces) == "###" {
                 if !inLyricsBlock {
-                    // Start of lyrics block
                     inLyricsBlock = true
                 } else {
-                    // End of lyrics block - save song
                     if let title = currentTitle, !currentLyrics.isEmpty {
                         let lyrics = currentLyrics.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
                         let processedLyrics = lyrics.replacingOccurrences(of: "\\n", with: "\n")
@@ -66,12 +94,10 @@ struct SongLoader {
                     inLyricsBlock = false
                 }
             } else if inLyricsBlock {
-                // Collect lyrics lines
                 currentLyrics.append(line)
             }
         }
         
-        // Save last song if exists
         if let title = currentTitle, !currentLyrics.isEmpty {
             let lyrics = currentLyrics.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
             let processedLyrics = lyrics.replacingOccurrences(of: "\\n", with: "\n")
@@ -81,5 +107,3 @@ struct SongLoader {
         return songs
     }
 }
-
-

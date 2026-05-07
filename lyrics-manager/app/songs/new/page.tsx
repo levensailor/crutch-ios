@@ -6,10 +6,7 @@ export default function NewSongPage() {
   return (
     <main className="page-shell">
       <div className="header-row">
-        <div>
-          <div className="eyebrow">New song</div>
-          <h1 className="title">Write lyrics</h1>
-        </div>
+        <div className="eyebrow">New song</div>
         <Link className="button secondary" href="/">
           Back to songs
         </Link>

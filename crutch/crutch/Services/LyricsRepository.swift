@@ -36,6 +36,23 @@ struct PublicLyricsSongPayload: Codable, Equatable {
     let startsOn: String?
     let sortOrder: Int?
     let updatedAt: String?
+    let tabs: PublicLyricsTabsPayload?
+}
+
+struct PublicLyricsTabsPayload: Codable, Equatable {
+    let version: Int?
+    let pages: [PublicLyricsTabPagePayload]?
+}
+
+struct PublicLyricsTabPagePayload: Codable, Equatable {
+    let pageIndex: Int
+    let notes: [PublicLyricsTabNotePayload]
+}
+
+struct PublicLyricsTabNotePayload: Codable, Equatable {
+    let note: String
+    let x: Double
+    let y: Double
 }
 
 private struct CachedLyricsPayload: Codable {
@@ -192,8 +209,36 @@ final class LyricsRepository {
                 id: UUID(uuidString: payloadSong.id) ?? UUID(),
                 title: payloadSong.title,
                 lyrics: payloadSong.lyrics.replacingOccurrences(of: "\\n", with: "\n"),
-                startsOn: startsOn?.isEmpty == true ? nil : startsOn
+                startsOn: startsOn?.isEmpty == true ? nil : startsOn,
+                tabs: convertTabs(payloadSong.tabs)
             )
         }
+    }
+    
+    private func convertTabs(_ payload: PublicLyricsTabsPayload?) -> SongTabs {
+        guard let payload, let pages = payload.pages else {
+            return .empty
+        }
+        
+        let convertedPages: [TabPage] = pages.map { page in
+            let placements: [TabPlacement] = page.notes.map { note in
+                TabPlacement(
+                    note: note.note,
+                    x: clampNormalized(note.x),
+                    y: clampNormalized(note.y)
+                )
+            }
+            return TabPage(pageIndex: page.pageIndex, notes: placements)
+        }
+        
+        return SongTabs(version: payload.version ?? 1, pages: convertedPages)
+    }
+    
+    private func clampNormalized(_ value: Double) -> Double {
+        if value.isNaN || value.isInfinite {
+            return 0
+        }
+        
+        return min(max(value, 0), 1)
     }
 }

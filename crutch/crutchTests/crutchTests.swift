@@ -117,7 +117,8 @@ struct crutchTests {
                     lyrics: "structured line",
                     startsOn: "Bm",
                     sortOrder: 0,
-                    updatedAt: "2026-04-27T00:00:00Z"
+                    updatedAt: "2026-04-27T00:00:00Z",
+                    tabs: nil
                 )
             ]
         )
@@ -136,6 +137,115 @@ struct crutchTests {
         #expect(songs.map(\.title) == ["Structured Song"])
         #expect(songs[0].startsOn == "Bm")
         #expect(songs[0].lyrics == "structured line")
+        #expect(songs[0].tabs.pages.isEmpty)
+    }
+    
+    @Test func repositoryDecodesPageSpecificTabPlacements() async throws {
+        let markdown = """
+        # Tabbed Song
+        ###
+        page one line
+        #####
+        page two line
+        ###
+        """
+        let payload = PublicLyricsPayload(
+            version: 2,
+            updatedAt: "2026-05-07T00:00:00Z",
+            checksum: sha256(markdown),
+            markdown: markdown,
+            songs: [
+                PublicLyricsSongPayload(
+                    id: "11111111-1111-4111-8111-111111111111",
+                    title: "Tabbed Song",
+                    lyrics: "page one line\n#####\npage two line",
+                    startsOn: "A",
+                    sortOrder: 0,
+                    updatedAt: "2026-05-07T00:00:00Z",
+                    tabs: PublicLyricsTabsPayload(
+                        version: 1,
+                        pages: [
+                            PublicLyricsTabPagePayload(
+                                pageIndex: 0,
+                                notes: [
+                                    PublicLyricsTabNotePayload(note: "A", x: 0.25, y: 0.5)
+                                ]
+                            ),
+                            PublicLyricsTabPagePayload(
+                                pageIndex: 1,
+                                notes: [
+                                    PublicLyricsTabNotePayload(note: "Bm", x: 0.75, y: 0.25)
+                                ]
+                            )
+                        ]
+                    )
+                )
+            ]
+        )
+        let data = try JSONEncoder().encode(payload)
+        let fetcher = MockLyricsFetcher(results: [
+            .success(data, statusCode: 200, headers: [:])
+        ])
+        let repository = LyricsRepository(
+            publicLyricsURL: URL(string: "https://example.com/api/public/lyrics")!,
+            session: fetcher,
+            cacheDirectory: temporaryDirectory()
+        )
+        
+        let songs = await repository.loadSongs()
+        let tabs = songs[0].tabs
+        
+        #expect(tabs.pages.count == 2)
+        #expect(tabs.placements(forPageIndex: 0).first?.note == "A")
+        #expect(tabs.placements(forPageIndex: 0).first?.x == 0.25)
+        #expect(tabs.placements(forPageIndex: 1).first?.note == "Bm")
+        #expect(tabs.placements(forPageIndex: 1).first?.y == 0.25)
+    }
+    
+    @Test func tabsClampOutOfRangeNormalizedCoordinates() async throws {
+        let markdown = "# Clamp Song\n###\nclamp line\n###"
+        let payload = PublicLyricsPayload(
+            version: 3,
+            updatedAt: "2026-05-07T00:00:00Z",
+            checksum: sha256(markdown),
+            markdown: markdown,
+            songs: [
+                PublicLyricsSongPayload(
+                    id: "22222222-2222-4222-8222-222222222222",
+                    title: "Clamp Song",
+                    lyrics: "clamp line",
+                    startsOn: nil,
+                    sortOrder: 0,
+                    updatedAt: "2026-05-07T00:00:00Z",
+                    tabs: PublicLyricsTabsPayload(
+                        version: 1,
+                        pages: [
+                            PublicLyricsTabPagePayload(
+                                pageIndex: 0,
+                                notes: [
+                                    PublicLyricsTabNotePayload(note: "C", x: 1.5, y: -0.25)
+                                ]
+                            )
+                        ]
+                    )
+                )
+            ]
+        )
+        let data = try JSONEncoder().encode(payload)
+        let fetcher = MockLyricsFetcher(results: [
+            .success(data, statusCode: 200, headers: [:])
+        ])
+        let repository = LyricsRepository(
+            publicLyricsURL: URL(string: "https://example.com/api/public/lyrics")!,
+            session: fetcher,
+            cacheDirectory: temporaryDirectory()
+        )
+        
+        let songs = await repository.loadSongs()
+        let placement = songs[0].tabs.placements(forPageIndex: 0).first
+        
+        #expect(placement?.x == 1)
+        #expect(placement?.y == 0)
     }
     
     @Test func repositoryRejectsMalformedRemotePayload() async throws {

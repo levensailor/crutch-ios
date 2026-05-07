@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import type { SongRecord } from "./schemas";
+import type { SongRecord, SongTabs } from "./schemas";
 export { autoAddPageMarkers, renderInlineMarkers, splitByPageMarkers } from "./lyrics-markers";
 
 export type PublicLyricsPayload = {
@@ -17,6 +17,7 @@ export type PublicLyricsSong = {
   startsOn: string;
   sortOrder: number;
   updatedAt: string;
+  tabs: SongTabs;
 };
 
 export type ParsedLyricsPage = {
@@ -58,7 +59,7 @@ export function publicLyricsPayload(songs: SongRecord[]): PublicLyricsPayload {
       startsOn: song.startsOn,
       sortOrder: song.sortOrder,
       updatedAt: song.updatedAt,
+      tabs: song.tabs,
     })),
   };
 }
-

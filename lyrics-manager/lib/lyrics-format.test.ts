@@ -6,7 +6,7 @@ import {
   songsToMarkdown,
   splitByPageMarkers,
 } from "./lyrics-format";
-import type { SongRecord } from "./schemas";
+import { EMPTY_SONG_TABS, type SongRecord, type SongTabs } from "./schemas";
 
 describe("lyrics format", () => {
   it("serializes songs to the markdown contract used by the iOS app", () => {
@@ -50,6 +50,30 @@ describe("lyrics format", () => {
     expect(payload.songs[0].startsOn).toBe("Bm");
     expect(payload.version).toBeGreaterThan(0);
   });
+
+  it("forwards page-specific tab placements through the public payload", () => {
+    const tabs: SongTabs = {
+      version: 1,
+      pages: [
+        {
+          pageIndex: 0,
+          notes: [
+            { note: "A", x: 0.1, y: 0.2 },
+            { note: "Bm", x: 0.5, y: 0.75 },
+          ],
+        },
+      ],
+    };
+    const payload = publicLyricsPayload([song({ tabs })]);
+
+    expect(payload.songs[0].tabs).toEqual(tabs);
+  });
+
+  it("defaults missing tabs to an empty payload", () => {
+    const payload = publicLyricsPayload([song({})]);
+
+    expect(payload.songs[0].tabs).toEqual(EMPTY_SONG_TABS);
+  });
 });
 
 function song(overrides: Partial<SongRecord>): SongRecord {
@@ -59,6 +83,7 @@ function song(overrides: Partial<SongRecord>): SongRecord {
     lyrics: "",
     startsOn: "",
     sortOrder: 0,
+    tabs: EMPTY_SONG_TABS,
     createdAt: "2026-04-27T00:00:00.000Z",
     updatedAt: "2026-04-27T00:00:00.000Z",
     ...overrides,

@@ -23,6 +23,7 @@ The Vercel app lives in `lyrics-manager/`. It provides:
 - A live iPhone 16 Pro screen simulator on the edit page.
 - Toolbar actions for highlight cues and automatic page-break insertion.
 - A song-level "Starts on" field that renders under the iOS back button.
+- An in-place editable song title and a Tabs panel with draggable note pills (A through G#m, major and minor) that are positioned per page on the simulator and rendered on the iOS lyrics screen.
 
 Editing is intentionally public in this version. Anyone with the URL can change lyrics.
 

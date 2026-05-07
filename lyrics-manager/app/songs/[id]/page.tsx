@@ -26,10 +26,7 @@ export default async function EditSongPage({ params }: PageProps) {
   return (
     <main className="page-shell">
       <div className="header-row">
-        <div>
-          <div className="eyebrow">Edit song</div>
-          <h1 className="title">{song.title}</h1>
-        </div>
+        <div className="eyebrow">Edit song</div>
         <Link className="button secondary" href="/">
           Back to songs
         </Link>
