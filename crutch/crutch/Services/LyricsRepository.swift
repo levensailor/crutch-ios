@@ -50,6 +50,7 @@ struct PublicLyricsTabPagePayload: Codable, Equatable {
 }
 
 struct PublicLyricsTabNotePayload: Codable, Equatable {
+    let id: String?
     let note: String
     let x: Double
     let y: Double
@@ -221,8 +222,10 @@ final class LyricsRepository {
         }
         
         let convertedPages: [TabPage] = pages.map { page in
-            let placements: [TabPlacement] = page.notes.map { note in
-                TabPlacement(
+            let placements: [TabPlacement] = page.notes.enumerated().map { offset, note in
+                let fallbackId = "page-\(page.pageIndex)-note-\(offset)"
+                return TabPlacement(
+                    id: note.id ?? fallbackId,
                     note: note.note,
                     x: clampNormalized(note.x),
                     y: clampNormalized(note.y)

@@ -32,6 +32,7 @@ export type TabNote = (typeof TAB_NOTES)[number];
 export const tabNoteSchema = z.enum(TAB_NOTES);
 
 export const tabPlacementSchema = z.object({
+  id: z.string().min(1).optional(),
   note: tabNoteSchema,
   x: z.number().min(0).max(1),
   y: z.number().min(0).max(1),

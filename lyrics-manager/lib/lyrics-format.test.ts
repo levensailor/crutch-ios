@@ -58,8 +58,8 @@ describe("lyrics format", () => {
         {
           pageIndex: 0,
           notes: [
-            { note: "A", x: 0.1, y: 0.2 },
-            { note: "Bm", x: 0.5, y: 0.75 },
+            { id: "a-1", note: "A", x: 0.1, y: 0.2 },
+            { id: "bm-1", note: "Bm", x: 0.5, y: 0.75 },
           ],
         },
       ],
@@ -67,6 +67,30 @@ describe("lyrics format", () => {
     const payload = publicLyricsPayload([song({ tabs })]);
 
     expect(payload.songs[0].tabs).toEqual(tabs);
+  });
+
+  it("preserves multiple instances of the same note on a page", () => {
+    const tabs: SongTabs = {
+      version: 1,
+      pages: [
+        {
+          pageIndex: 0,
+          notes: [
+            { id: "a-1", note: "A", x: 0.1, y: 0.1 },
+            { id: "a-2", note: "A", x: 0.6, y: 0.6 },
+            { id: "a-3", note: "A", x: 0.4, y: 0.8 },
+          ],
+        },
+      ],
+    };
+    const payload = publicLyricsPayload([song({ tabs })]);
+
+    expect(payload.songs[0].tabs.pages[0].notes).toHaveLength(3);
+    expect(payload.songs[0].tabs.pages[0].notes.map((note) => note.id)).toEqual([
+      "a-1",
+      "a-2",
+      "a-3",
+    ]);
   });
 
   it("defaults missing tabs to an empty payload", () => {

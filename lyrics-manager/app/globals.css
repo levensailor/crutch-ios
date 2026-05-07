@@ -334,28 +334,60 @@ textarea {
   line-height: 1.3;
 }
 
+.tab-palette {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+}
+
 .tab-pill {
   align-items: center;
   background: #fffaf2;
-  border: 1.5px solid #111111;
+  border: 1.25px solid #111111;
   border-radius: 999px;
   color: #111111;
   cursor: grab;
-  display: flex;
-  font-size: 12px;
+  display: inline-flex;
+  font-size: 10px;
   font-weight: 800;
-  height: 26px;
+  height: 18px;
   justify-content: center;
-  position: absolute;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  min-width: 32px;
+  padding: 0 6px;
   touch-action: none;
   user-select: none;
-  width: 44px;
+}
+
+.tab-pill.placed {
+  position: absolute;
   z-index: 5;
 }
 
-.tab-pill.dragging {
+.tab-pill.placed.dragging {
   cursor: grabbing;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+.tab-pill.placed.removing {
+  background: rgba(157, 23, 23, 0.18);
+  border-color: var(--danger);
+  color: var(--danger);
+  cursor: not-allowed;
+}
+
+.tab-pill.ghost {
+  background: #fffaf2;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  pointer-events: none;
+  position: fixed;
+  z-index: 1000;
 }
 
 .simulated-lyrics mark {

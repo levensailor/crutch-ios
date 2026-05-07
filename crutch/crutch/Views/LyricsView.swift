@@ -10,15 +10,10 @@ struct LyricsView: View {
     private let font = UIFont.systemFont(ofSize: 18, weight: .bold)
     private let minimumSwipeDistance: CGFloat = 50
     private let backButtonSize: CGFloat = 30
-    private let pillSize = CGSize(width: 44, height: 26)
+    private let pillSize = CGSize(width: 32, height: 18)
     private var topRightControlSize: CGSize {
         CGSize(width: backButtonSize * 1.5, height: backButtonSize * 3)
     }
-    
-    private static let allNotes: [String] = [
-        "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#",
-        "Am", "A#m", "Bm", "Cm", "C#m", "Dm", "D#m", "Em", "Fm", "F#m", "Gm", "G#m",
-    ]
     
     var body: some View {
         GeometryReader { geometry in
@@ -116,19 +111,13 @@ struct LyricsView: View {
     @ViewBuilder
     private func tabPillsLayer(in screenSize: CGSize) -> some View {
         if screenSize.width > 0, screenSize.height > 0 {
-            let placements = currentPagePlacements()
+            let placements = song.tabs.placements(forPageIndex: currentPageIndex)
             
             ZStack(alignment: .topLeading) {
-                ForEach(Self.allNotes, id: \.self) { note in
-                    TabPillView(note: note)
+                ForEach(placements) { placement in
+                    TabPillView(note: placement.note)
                         .frame(width: pillSize.width, height: pillSize.height)
-                        .position(
-                            position(
-                                for: note,
-                                placements: placements,
-                                screenSize: screenSize
-                            )
-                        )
+                        .position(position(for: placement, screenSize: screenSize))
                 }
             }
             .frame(width: screenSize.width, height: screenSize.height)
@@ -137,47 +126,14 @@ struct LyricsView: View {
         }
     }
     
-    private func currentPagePlacements() -> [String: TabPlacement] {
-        let placements = song.tabs.placements(forPageIndex: currentPageIndex)
-        var dictionary: [String: TabPlacement] = [:]
-        for placement in placements {
-            dictionary[placement.note] = placement
-        }
-        return dictionary
-    }
-    
-    private func position(
-        for note: String,
-        placements: [String: TabPlacement],
-        screenSize: CGSize
-    ) -> CGPoint {
+    private func position(for placement: TabPlacement, screenSize: CGSize) -> CGPoint {
         let maxX = max(screenSize.width - pillSize.width, 1)
         let maxY = max(screenSize.height - pillSize.height, 1)
-        
-        let topLeft: CGPoint
-        if let placement = placements[note] {
-            topLeft = CGPoint(
-                x: CGFloat(placement.x) * screenSize.width,
-                y: CGFloat(placement.y) * screenSize.height
-            )
-        } else {
-            topLeft = defaultTopLeft(for: note, in: screenSize)
-        }
-        
-        let clampedX = min(max(topLeft.x, 0), maxX)
-        let clampedY = min(max(topLeft.y, 0), maxY)
-        
+        let topLeftX = CGFloat(placement.x) * screenSize.width
+        let topLeftY = CGFloat(placement.y) * screenSize.height
+        let clampedX = min(max(topLeftX, 0), maxX)
+        let clampedY = min(max(topLeftY, 0), maxY)
         return CGPoint(x: clampedX + pillSize.width / 2, y: clampedY + pillSize.height / 2)
-    }
-    
-    private func defaultTopLeft(for note: String, in screenSize: CGSize) -> CGPoint {
-        let columns = 6
-        let index = Self.allNotes.firstIndex(of: note) ?? 0
-        let column = index % columns
-        let row = index / columns
-        let x = (0.04 + Double(column) * 0.15) * screenSize.width
-        let y = (0.04 + Double(row) * 0.07) * screenSize.height
-        return CGPoint(x: x, y: y)
     }
     
     private func calculatePages() {
@@ -222,17 +178,17 @@ private struct TabPillView: View {
     
     var body: some View {
         Text(note)
-            .font(.system(size: 12, weight: .heavy))
+            .font(.system(size: 10, weight: .heavy))
             .foregroundColor(.black)
-            .padding(.horizontal, 8)
+            .padding(.horizontal, 6)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(
-                RoundedRectangle(cornerRadius: 13)
+                RoundedRectangle(cornerRadius: 9)
                     .fill(Color(red: 1.0, green: 0.98, blue: 0.95))
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 13)
-                    .stroke(Color.black, lineWidth: 1.5)
+                RoundedRectangle(cornerRadius: 9)
+                    .stroke(Color.black, lineWidth: 1.25)
             )
     }
 }

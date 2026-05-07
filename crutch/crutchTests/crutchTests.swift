@@ -168,13 +168,14 @@ struct crutchTests {
                             PublicLyricsTabPagePayload(
                                 pageIndex: 0,
                                 notes: [
-                                    PublicLyricsTabNotePayload(note: "A", x: 0.25, y: 0.5)
+                                    PublicLyricsTabNotePayload(id: "a-1", note: "A", x: 0.25, y: 0.5),
+                                    PublicLyricsTabNotePayload(id: "a-2", note: "A", x: 0.6, y: 0.6)
                                 ]
                             ),
                             PublicLyricsTabPagePayload(
                                 pageIndex: 1,
                                 notes: [
-                                    PublicLyricsTabNotePayload(note: "Bm", x: 0.75, y: 0.25)
+                                    PublicLyricsTabNotePayload(id: "bm-1", note: "Bm", x: 0.75, y: 0.25)
                                 ]
                             )
                         ]
@@ -196,8 +197,11 @@ struct crutchTests {
         let tabs = songs[0].tabs
         
         #expect(tabs.pages.count == 2)
-        #expect(tabs.placements(forPageIndex: 0).first?.note == "A")
-        #expect(tabs.placements(forPageIndex: 0).first?.x == 0.25)
+        let firstPagePlacements = tabs.placements(forPageIndex: 0)
+        #expect(firstPagePlacements.count == 2)
+        #expect(firstPagePlacements.map(\.note) == ["A", "A"])
+        #expect(firstPagePlacements.map(\.id) == ["a-1", "a-2"])
+        #expect(firstPagePlacements.first?.x == 0.25)
         #expect(tabs.placements(forPageIndex: 1).first?.note == "Bm")
         #expect(tabs.placements(forPageIndex: 1).first?.y == 0.25)
     }
@@ -223,7 +227,7 @@ struct crutchTests {
                             PublicLyricsTabPagePayload(
                                 pageIndex: 0,
                                 notes: [
-                                    PublicLyricsTabNotePayload(note: "C", x: 1.5, y: -0.25)
+                                    PublicLyricsTabNotePayload(id: nil, note: "C", x: 1.5, y: -0.25)
                                 ]
                             )
                         ]
@@ -246,6 +250,7 @@ struct crutchTests {
         
         #expect(placement?.x == 1)
         #expect(placement?.y == 0)
+        #expect(placement?.id == "page-0-note-0")
     }
     
     @Test func repositoryRejectsMalformedRemotePayload() async throws {

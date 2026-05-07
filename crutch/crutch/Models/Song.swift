@@ -1,11 +1,10 @@
 import Foundation
 
 struct TabPlacement: Identifiable, Equatable {
+    let id: String
     let note: String
     let x: Double
     let y: Double
-    
-    var id: String { note }
 }
 
 struct TabPage: Equatable {

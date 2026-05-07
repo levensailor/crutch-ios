@@ -26,22 +26,34 @@ type LyricsEditorProps = {
   deleteAction?: (formData: FormData) => Promise<void>;
 };
 
-type DragState = {
-  note: TabNote;
-  pointerId: number;
-  offsetX: number;
-  offsetY: number;
-};
+type DragState =
+  | {
+      kind: "palette";
+      note: TabNote;
+      pointerId: number;
+      clientX: number;
+      clientY: number;
+    }
+  | {
+      kind: "placement";
+      placementId: string;
+      pointerId: number;
+      offsetX: number;
+      offsetY: number;
+      clientX: number;
+      clientY: number;
+      droppedOff: boolean;
+    };
 
-const PILL_WIDTH = 44;
-const PILL_HEIGHT = 26;
+const PILL_WIDTH = 32;
+const PILL_HEIGHT = 18;
 
 export function LyricsEditor({ song, saveAction, deleteAction }: LyricsEditorProps) {
   const [title, setTitle] = useState(song?.title ?? "");
   const [lyrics, setLyrics] = useState(song?.lyrics ?? "");
   const [pageIndex, setPageIndex] = useState(0);
-  const [tabs, setTabs] = useState<SongTabs>(song?.tabs ?? EMPTY_SONG_TABS);
-  const [dragState, setDragState] = useState<DragState | null>(null);
+  const [tabs, setTabs] = useState<SongTabs>(() => normalizePlacementIds(song?.tabs ?? EMPTY_SONG_TABS));
+  const [drag, setDrag] = useState<DragState | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const screenRef = useRef<HTMLDivElement | null>(null);
 
@@ -51,6 +63,11 @@ export function LyricsEditor({ song, saveAction, deleteAction }: LyricsEditorPro
   const currentPage = pages[safePageIndex] ?? "";
   const currentPageLineCount = currentPage ? currentPage.split(/\r?\n/).length : 0;
   const isDensePage = currentPageLineCount > 28 || currentPage.length > 850;
+  const placementsForPage = useMemo(
+    () => getPagePlacements(tabs, safePageIndex),
+    [tabs, safePageIndex],
+  );
+  const tabsJson = useMemo(() => JSON.stringify(tabs), [tabs]);
 
   useEffect(() => {
     setPageIndex(0);
@@ -59,13 +76,6 @@ export function LyricsEditor({ song, saveAction, deleteAction }: LyricsEditorPro
   useEffect(() => {
     setTabs((current) => reconcileTabs(current, pages.length));
   }, [pages.length]);
-
-  const placementsForPage = useMemo(
-    () => placementsByNote(getPagePlacements(tabs, safePageIndex)),
-    [tabs, safePageIndex],
-  );
-
-  const tabsJson = useMemo(() => JSON.stringify(tabs), [tabs]);
 
   function wrapSelection(openMarker: string, closeMarker = openMarker) {
     const textarea = textareaRef.current;
@@ -109,62 +119,151 @@ export function LyricsEditor({ song, saveAction, deleteAction }: LyricsEditorPro
     });
   }
 
-  const updateNotePosition = useCallback(
-    (note: TabNote, normalizedX: number, normalizedY: number) => {
-      setTabs((current) => updateTabPlacement(current, safePageIndex, note, normalizedX, normalizedY));
-    },
-    [safePageIndex],
-  );
+  const screenRectFromCurrent = useCallback((): DOMRect | null => {
+    return screenRef.current?.getBoundingClientRect() ?? null;
+  }, []);
 
-  function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>, note: TabNote) {
-    const screen = screenRef.current;
-    const target = event.currentTarget;
-
-    if (!screen) {
-      return;
+  function pointIsOverScreen(rect: DOMRect | null, clientX: number, clientY: number): boolean {
+    if (!rect) {
+      return false;
     }
 
-    const targetRect = target.getBoundingClientRect();
-    target.setPointerCapture(event.pointerId);
-    setDragState({
+    return (
+      clientX >= rect.left &&
+      clientX <= rect.right &&
+      clientY >= rect.top &&
+      clientY <= rect.bottom
+    );
+  }
+
+  function placementCenterToNormalized(
+    rect: DOMRect,
+    centerX: number,
+    centerY: number,
+  ): { x: number; y: number } {
+    const topLeftX = centerX - rect.left - PILL_WIDTH / 2;
+    const topLeftY = centerY - rect.top - PILL_HEIGHT / 2;
+    const maxX = Math.max(rect.width - PILL_WIDTH, 1);
+    const maxY = Math.max(rect.height - PILL_HEIGHT, 1);
+    const clampedX = clamp(topLeftX, 0, maxX);
+    const clampedY = clamp(topLeftY, 0, maxY);
+
+    return {
+      x: clampedX / Math.max(rect.width, 1),
+      y: clampedY / Math.max(rect.height, 1),
+    };
+  }
+
+  function handlePalettePointerDown(event: ReactPointerEvent<HTMLDivElement>, note: TabNote) {
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setDrag({
+      kind: "palette",
       note,
       pointerId: event.pointerId,
-      offsetX: event.clientX - targetRect.left,
-      offsetY: event.clientY - targetRect.top,
+      clientX: event.clientX,
+      clientY: event.clientY,
     });
     event.preventDefault();
   }
 
-  function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
-    const screen = screenRef.current;
-
-    if (!dragState || !screen || dragState.pointerId !== event.pointerId) {
+  function handlePalettePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!drag || drag.kind !== "palette" || drag.pointerId !== event.pointerId) {
       return;
     }
 
-    const screenRect = screen.getBoundingClientRect();
-    const localX = event.clientX - screenRect.left - dragState.offsetX;
-    const localY = event.clientY - screenRect.top - dragState.offsetY;
-    const maxX = Math.max(screenRect.width - PILL_WIDTH, 1);
-    const maxY = Math.max(screenRect.height - PILL_HEIGHT, 1);
-    const clampedX = clamp(localX, 0, maxX);
-    const clampedY = clamp(localY, 0, maxY);
-    const normalizedX = clampedX / Math.max(screenRect.width, 1);
-    const normalizedY = clampedY / Math.max(screenRect.height, 1);
-
-    updateNotePosition(dragState.note, normalizedX, normalizedY);
+    setDrag({ ...drag, clientX: event.clientX, clientY: event.clientY });
   }
 
-  function handlePointerUp(event: ReactPointerEvent<HTMLDivElement>) {
-    if (!dragState || dragState.pointerId !== event.pointerId) {
+  function handlePalettePointerUp(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!drag || drag.kind !== "palette" || drag.pointerId !== event.pointerId) {
       return;
+    }
+
+    const rect = screenRectFromCurrent();
+
+    if (pointIsOverScreen(rect, event.clientX, event.clientY) && rect) {
+      const normalized = placementCenterToNormalized(rect, event.clientX, event.clientY);
+      const newPlacement: TabPlacement = {
+        id: createPlacementId(),
+        note: drag.note,
+        x: normalized.x,
+        y: normalized.y,
+      };
+      setTabs((current) => addPlacement(current, safePageIndex, newPlacement));
     }
 
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
 
-    setDragState(null);
+    setDrag(null);
+  }
+
+  function handlePlacementPointerDown(
+    event: ReactPointerEvent<HTMLDivElement>,
+    placement: TabPlacement,
+  ) {
+    if (!placement.id) {
+      return;
+    }
+
+    const target = event.currentTarget;
+    const targetRect = target.getBoundingClientRect();
+    target.setPointerCapture(event.pointerId);
+    setDrag({
+      kind: "placement",
+      placementId: placement.id,
+      pointerId: event.pointerId,
+      offsetX: event.clientX - targetRect.left,
+      offsetY: event.clientY - targetRect.top,
+      clientX: event.clientX,
+      clientY: event.clientY,
+      droppedOff: false,
+    });
+    event.preventDefault();
+  }
+
+  function handlePlacementPointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!drag || drag.kind !== "placement" || drag.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const rect = screenRectFromCurrent();
+    const isOver = pointIsOverScreen(rect, event.clientX, event.clientY);
+
+    setDrag({
+      ...drag,
+      clientX: event.clientX,
+      clientY: event.clientY,
+      droppedOff: !isOver,
+    });
+
+    if (isOver && rect) {
+      const centerX = event.clientX - drag.offsetX + PILL_WIDTH / 2;
+      const centerY = event.clientY - drag.offsetY + PILL_HEIGHT / 2;
+      const normalized = placementCenterToNormalized(rect, centerX, centerY);
+      setTabs((current) =>
+        updatePlacement(current, safePageIndex, drag.placementId, normalized.x, normalized.y),
+      );
+    }
+  }
+
+  function handlePlacementPointerUp(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!drag || drag.kind !== "placement" || drag.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const rect = screenRectFromCurrent();
+
+    if (!pointIsOverScreen(rect, event.clientX, event.clientY)) {
+      setTabs((current) => removePlacement(current, safePageIndex, drag.placementId));
+    }
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    setDrag(null);
   }
 
   return (
@@ -245,42 +344,63 @@ export function LyricsEditor({ song, saveAction, deleteAction }: LyricsEditorPro
           <div className="tabs-section-heading">
             <h3 className="tabs-subtitle">Tabs</h3>
             <span className="muted tabs-help">
-              Drag any note pill onto the screen to mark it for page {safePageIndex + 1}.
+              Drag a note onto the screen for page {safePageIndex + 1}. Drag a placed note off the
+              screen to remove it.
             </span>
           </div>
 
+          <div className="tab-palette" aria-label="Tab note palette">
+            {TAB_NOTES.map((note) => (
+              <div
+                aria-label={`Add ${note} to page ${safePageIndex + 1}`}
+                className="tab-pill palette"
+                key={note}
+                onPointerDown={(event) => handlePalettePointerDown(event, note)}
+                onPointerMove={handlePalettePointerMove}
+                onPointerUp={handlePalettePointerUp}
+                onPointerCancel={handlePalettePointerUp}
+                role="button"
+              >
+                {note}
+              </div>
+            ))}
+          </div>
+
           <div className="phone-frame">
-            <div
-              className="phone-screen"
-              onPointerMove={handlePointerMove}
-              onPointerUp={handlePointerUp}
-              onPointerCancel={handlePointerUp}
-              ref={screenRef}
-            >
+            <div className="phone-screen" ref={screenRef}>
               <div
                 className="simulated-lyrics"
                 dangerouslySetInnerHTML={{ __html: renderInlineMarkers(currentPage) }}
               />
-              {TAB_NOTES.map((note) => {
-                const placement = placementsForPage.get(note);
-                const style: CSSProperties = placement
-                  ? {
-                      left: `${placement.x * 100}%`,
-                      top: `${placement.y * 100}%`,
-                    }
-                  : defaultPillStyle(note);
-                const isDragging = dragState?.note === note;
+              {placementsForPage.map((placement) => {
+                const placementId = placement.id;
+
+                if (!placementId) {
+                  return null;
+                }
+
+                const isDragging =
+                  drag?.kind === "placement" && drag.placementId === placementId;
+                const style: CSSProperties = {
+                  left: `${placement.x * 100}%`,
+                  top: `${placement.y * 100}%`,
+                };
+                const className =
+                  "tab-pill placed" + (isDragging ? (drag.droppedOff ? " removing" : " dragging") : "");
 
                 return (
                   <div
-                    aria-label={`Note ${note}`}
-                    className={`tab-pill${isDragging ? " dragging" : ""}`}
-                    key={note}
-                    onPointerDown={(event) => handlePointerDown(event, note)}
+                    aria-label={`${placement.note} pill, drag to move or off-screen to remove`}
+                    className={className}
+                    key={placementId}
+                    onPointerDown={(event) => handlePlacementPointerDown(event, placement)}
+                    onPointerMove={handlePlacementPointerMove}
+                    onPointerUp={handlePlacementPointerUp}
+                    onPointerCancel={handlePlacementPointerUp}
                     role="button"
                     style={style}
                   >
-                    {note}
+                    {placement.note}
                   </div>
                 );
               })}
@@ -316,22 +436,25 @@ export function LyricsEditor({ song, saveAction, deleteAction }: LyricsEditorPro
           </p>
         </section>
       </aside>
+
+      {drag?.kind === "palette" ? (
+        <div
+          aria-hidden="true"
+          className="tab-pill ghost"
+          style={{
+            left: drag.clientX - PILL_WIDTH / 2,
+            top: drag.clientY - PILL_HEIGHT / 2,
+          }}
+        >
+          {drag.note}
+        </div>
+      ) : null}
     </div>
   );
 }
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
-}
-
-function placementsByNote(placements: TabPlacement[]): Map<TabNote, TabPlacement> {
-  const map = new Map<TabNote, TabPlacement>();
-
-  for (const placement of placements) {
-    map.set(placement.note, placement);
-  }
-
-  return map;
 }
 
 function getPagePlacements(tabs: SongTabs, pageIndex: number): TabPlacement[] {
@@ -359,54 +482,91 @@ function reconcileTabs(tabs: SongTabs, pageCount: number): SongTabs {
   return { version: 1, pages: filtered };
 }
 
-function updateTabPlacement(
+function addPlacement(tabs: SongTabs, pageIndex: number, placement: TabPlacement): SongTabs {
+  const existingPageIndex = tabs.pages.findIndex((page) => page.pageIndex === pageIndex);
+
+  if (existingPageIndex === -1) {
+    const newPage: TabPage = { pageIndex, notes: [placement] };
+    const nextPages = [...tabs.pages, newPage].sort((a, b) => a.pageIndex - b.pageIndex);
+    return { version: 1, pages: nextPages };
+  }
+
+  const targetPage = tabs.pages[existingPageIndex];
+  const nextNotes = [...targetPage.notes, placement];
+  const nextPages = tabs.pages.map((page, index) =>
+    index === existingPageIndex ? { ...page, notes: nextNotes } : page,
+  );
+
+  return { version: 1, pages: nextPages };
+}
+
+function updatePlacement(
   tabs: SongTabs,
   pageIndex: number,
-  note: TabNote,
+  placementId: string,
   x: number,
   y: number,
 ): SongTabs {
   const existingPageIndex = tabs.pages.findIndex((page) => page.pageIndex === pageIndex);
 
-  let nextPages: TabPage[];
-
   if (existingPageIndex === -1) {
-    const newPage: TabPage = {
-      pageIndex,
-      notes: [{ note, x, y }],
-    };
-    nextPages = [...tabs.pages, newPage].sort((a, b) => a.pageIndex - b.pageIndex);
-  } else {
-    const targetPage = tabs.pages[existingPageIndex];
-    const existingNoteIndex = targetPage.notes.findIndex((placement) => placement.note === note);
-    let nextNotes: TabPlacement[];
-
-    if (existingNoteIndex === -1) {
-      nextNotes = [...targetPage.notes, { note, x, y }];
-    } else {
-      nextNotes = targetPage.notes.map((placement, index) =>
-        index === existingNoteIndex ? { note, x, y } : placement,
-      );
-    }
-
-    nextPages = tabs.pages.map((page, index) =>
-      index === existingPageIndex ? { ...page, notes: nextNotes } : page,
-    );
+    return tabs;
   }
+
+  const targetPage = tabs.pages[existingPageIndex];
+  const nextNotes = targetPage.notes.map((note) =>
+    note.id === placementId ? { ...note, x, y } : note,
+  );
+  const nextPages = tabs.pages.map((page, index) =>
+    index === existingPageIndex ? { ...page, notes: nextNotes } : page,
+  );
 
   return { version: 1, pages: nextPages };
 }
 
-function defaultPillStyle(note: TabNote): CSSProperties {
-  const index = TAB_NOTES.indexOf(note);
-  const columns = 6;
-  const column = index % columns;
-  const row = Math.floor(index / columns);
-  const left = 4 + column * 15;
-  const top = 4 + row * 7;
+function removePlacement(tabs: SongTabs, pageIndex: number, placementId: string): SongTabs {
+  const existingPageIndex = tabs.pages.findIndex((page) => page.pageIndex === pageIndex);
 
-  return {
-    left: `${left}%`,
-    top: `${top}%`,
-  };
+  if (existingPageIndex === -1) {
+    return tabs;
+  }
+
+  const targetPage = tabs.pages[existingPageIndex];
+  const nextNotes = targetPage.notes.filter((note) => note.id !== placementId);
+
+  if (nextNotes.length === targetPage.notes.length) {
+    return tabs;
+  }
+
+  const nextPages = tabs.pages.map((page, index) =>
+    index === existingPageIndex ? { ...page, notes: nextNotes } : page,
+  );
+
+  return { version: 1, pages: nextPages };
+}
+
+function normalizePlacementIds(tabs: SongTabs): SongTabs {
+  let mutated = false;
+  const nextPages = tabs.pages.map((page) => {
+    const nextNotes = page.notes.map((note) => {
+      if (note.id) {
+        return note;
+      }
+
+      mutated = true;
+      return { ...note, id: createPlacementId() };
+    });
+
+    return mutated ? { ...page, notes: nextNotes } : page;
+  });
+
+  return mutated ? { version: 1, pages: nextPages } : tabs;
+}
+
+function createPlacementId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  return `placement-${Math.random().toString(36).slice(2)}-${Date.now().toString(36)}`;
 }

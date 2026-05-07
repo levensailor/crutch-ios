@@ -16,3 +16,8 @@
 
 - Add page-specific draggable tab pills to the lyrics manager simulator and the iOS lyrics screen.
 - Make the song title editable in place and remove the separate song name, sort order, and starts-on text boxes.
+
+## 2026-05-07 14:20 EDT
+
+- Move the tab note pills into a palette above the iPhone simulator so they can be dragged onto the screen, repositioned, duplicated, and removed by dragging off-screen.
+- Shrink tab pills on the simulator and the iOS lyrics screen so they no longer overlap performance text, and render only placed instances on iOS.
