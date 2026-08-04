@@ -71,6 +71,10 @@ private struct SongVisibilityUpdate: Codable {
     let hidden: Bool
 }
 
+private struct SongOrderRequest: Codable {
+    let songIds: [String]
+}
+
 final class LyricsRepository {
     private enum Configuration {
         static let configResourceName = "AppConfig"
@@ -118,7 +122,7 @@ final class LyricsRepository {
             return
         }
 
-        guard let visibilityURL = configuredVisibilityURL() else {
+        guard let visibilityURL = configuredAPIURL(path: "/api/songs/visibility") else {
             throw URLError(.badURL)
         }
 
@@ -143,6 +147,33 @@ final class LyricsRepository {
         }
 
         // Force a fresh public feed on the next load so the updated hidden flags are cached.
+        clearCachedETag()
+    }
+
+    func reorderSongs(_ orderedIds: [UUID]) async throws {
+        guard !orderedIds.isEmpty else {
+            return
+        }
+
+        guard let reorderURL = configuredAPIURL(path: "/api/songs/reorder") else {
+            throw URLError(.badURL)
+        }
+
+        let body = SongOrderRequest(
+            songIds: orderedIds.map { $0.uuidString.lowercased() }
+        )
+
+        var request = URLRequest(url: reorderURL)
+        request.httpMethod = "PATCH"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(body)
+
+        let (_, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200...299).contains(httpResponse.statusCode) else {
+            throw URLError(.badServerResponse)
+        }
+
         clearCachedETag()
     }
 
@@ -289,18 +320,18 @@ final class LyricsRepository {
         return min(max(value, 0), 1)
     }
 
-    private func configuredVisibilityURL() -> URL? {
+    private func configuredAPIURL(path: String) -> URL? {
         guard let publicLyricsURL else {
             return nil
         }
 
         var components = URLComponents(url: publicLyricsURL, resolvingAgainstBaseURL: false)
-        let path = components?.path ?? publicLyricsURL.path
+        let currentPath = components?.path ?? publicLyricsURL.path
 
-        if path.hasSuffix("/api/public/lyrics") {
-            components?.path = String(path.dropLast("/api/public/lyrics".count)) + "/api/songs/visibility"
+        if currentPath.hasSuffix("/api/public/lyrics") {
+            components?.path = String(currentPath.dropLast("/api/public/lyrics".count)) + path
         } else {
-            components?.path = "/api/songs/visibility"
+            components?.path = path
         }
 
         components?.query = nil

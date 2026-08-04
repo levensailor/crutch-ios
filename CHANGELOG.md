@@ -25,3 +25,8 @@
 ## 2026-08-04 11:10 EDT
 
 - Add a song-level hidden flag (default false) and an iOS show/hide list mode that saves visibility back to the lyrics manager.
+
+## 2026-08-04 11:25 EDT
+
+- Add long-press drag reordering on the iOS setlist (0.5s hold), persisted via `sort_order`.
+- Ensure newly created songs append with the next `sort_order` and always start as `hidden=false`.

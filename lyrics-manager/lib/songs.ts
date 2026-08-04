@@ -52,16 +52,21 @@ export async function getSong(id: string): Promise<SongRecord | null> {
 }
 
 export async function createSong(input: SongInput): Promise<SongRecord> {
-  const parsedInput = songInputSchema.parse(input);
+  const parsedInput = songInputSchema.parse({
+    ...input,
+    // New songs are always visible; hide them from the iOS setlist after creation if needed.
+    hidden: false,
+  });
   const sql = getSql();
   const tabsJson = JSON.stringify(parsedInput.tabs);
+  const sortOrder = await nextSortOrder();
   const rows = (await sql`
     insert into songs (title, lyrics, starts_on, sort_order, hidden, tabs)
     values (
       ${parsedInput.title},
       ${parsedInput.lyrics},
       ${parsedInput.startsOn},
-      ${parsedInput.sortOrder},
+      ${sortOrder},
       ${parsedInput.hidden},
       ${tabsJson}::jsonb
     )
@@ -160,6 +165,16 @@ function songRowToRecord(row: SongRow): SongRecord {
     createdAt: toIsoString(row.created_at),
     updatedAt: toIsoString(row.updated_at),
   };
+}
+
+async function nextSortOrder(): Promise<number> {
+  const sql = getSql();
+  const rows = (await sql`
+    select coalesce(max(sort_order), -1) + 1 as next_order
+    from songs
+  `) as Array<{ next_order: number | string }>;
+
+  return Number(rows[0]?.next_order ?? 0);
 }
 
 function normalizeTabs(value: unknown): SongTabs {
