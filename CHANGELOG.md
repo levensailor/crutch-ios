@@ -38,7 +38,3 @@
 ## 2026-08-04 11:40 EDT
 
 - Show the current song title in the Dynamic Island via a Live Activity, with marquee scrolling for long titles.
-
-## 2026-08-04 11:45 EDT
-
-- Harden Live Activity install/discovery with an explicit app Info.plist flag and a small companion widget so Crutch can appear under Settings → Apps.

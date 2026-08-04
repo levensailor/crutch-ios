@@ -47,15 +47,3 @@ Editing is intentionally public in this version. Anyone with the URL can change 
 ## Local Notes
 
 The bundled `crutch/crutch/Resources/lyrics.md` remains the final offline fallback. If the Vercel feed is unavailable, the app uses the last cached good feed, then bundled lyrics.
-
-## Live Activities / Dynamic Island
-
-Run the **crutch** app scheme in Xcode (not `CrutchWidgetsExtension`). That SpringBoard “Failed to show Widget” error is from trying to launch the widget extension directly; Live Activities are started by the app when you open a song.
-
-After installing, delete any old Crutch build from the phone, install fresh, and open a song once.
-
-To enable Live Activities:
-1. Settings → Face ID & Passcode → Live Activities (system master switch)
-2. Settings → Apps → Crutch → Live Activities (per-app toggle; appears after install)
-
-Crutch does not use push notifications, so it will not appear under Settings → Notifications.
