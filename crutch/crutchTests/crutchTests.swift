@@ -117,6 +117,7 @@ struct crutchTests {
                     lyrics: "structured line",
                     startsOn: "Bm",
                     sortOrder: 0,
+                    hidden: false,
                     updatedAt: "2026-04-27T00:00:00Z",
                     tabs: nil
                 )
@@ -137,6 +138,7 @@ struct crutchTests {
         #expect(songs.map(\.title) == ["Structured Song"])
         #expect(songs[0].startsOn == "Bm")
         #expect(songs[0].lyrics == "structured line")
+        #expect(songs[0].isHidden == false)
         #expect(songs[0].tabs.pages.isEmpty)
     }
     
@@ -161,6 +163,7 @@ struct crutchTests {
                     lyrics: "page one line\n#####\npage two line",
                     startsOn: "A",
                     sortOrder: 0,
+                    hidden: nil,
                     updatedAt: "2026-05-07T00:00:00Z",
                     tabs: PublicLyricsTabsPayload(
                         version: 1,
@@ -220,6 +223,7 @@ struct crutchTests {
                     lyrics: "clamp line",
                     startsOn: nil,
                     sortOrder: 0,
+                    hidden: true,
                     updatedAt: "2026-05-07T00:00:00Z",
                     tabs: PublicLyricsTabsPayload(
                         version: 1,
@@ -251,6 +255,7 @@ struct crutchTests {
         #expect(placement?.x == 1)
         #expect(placement?.y == 0)
         #expect(placement?.id == "page-0-note-0")
+        #expect(songs[0].isHidden == true)
     }
     
     @Test func repositoryRejectsMalformedRemotePayload() async throws {

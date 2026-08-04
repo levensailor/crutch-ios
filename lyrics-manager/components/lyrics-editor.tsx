@@ -283,6 +283,7 @@ export function LyricsEditor({ song, saveAction, deleteAction }: LyricsEditorPro
 
           <input name="sortOrder" type="hidden" value={song?.sortOrder ?? 0} />
           <input name="startsOn" type="hidden" value={song?.startsOn ?? ""} />
+          <input name="hidden" type="hidden" value={song?.hidden ? "true" : "false"} />
           <input name="tabs" type="hidden" value={tabsJson} />
 
           <div className="field-stack">

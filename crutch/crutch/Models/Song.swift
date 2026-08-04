@@ -29,19 +29,22 @@ struct Song: Identifiable {
     let lyrics: String
     let startsOn: String?
     let tabs: SongTabs
+    var isHidden: Bool
     
     init(
         id: UUID = UUID(),
         title: String,
         lyrics: String,
         startsOn: String? = nil,
-        tabs: SongTabs = .empty
+        tabs: SongTabs = .empty,
+        isHidden: Bool = false
     ) {
         self.id = id
         self.title = title
         self.lyrics = lyrics
         self.startsOn = startsOn
         self.tabs = tabs
+        self.isHidden = isHidden
     }
 }
 

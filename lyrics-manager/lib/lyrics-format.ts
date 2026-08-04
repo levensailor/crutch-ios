@@ -16,6 +16,7 @@ export type PublicLyricsSong = {
   lyrics: string;
   startsOn: string;
   sortOrder: number;
+  hidden: boolean;
   updatedAt: string;
   tabs: SongTabs;
 };
@@ -58,6 +59,7 @@ export function publicLyricsPayload(songs: SongRecord[]): PublicLyricsPayload {
       lyrics: song.lyrics,
       startsOn: song.startsOn,
       sortOrder: song.sortOrder,
+      hidden: song.hidden,
       updatedAt: song.updatedAt,
       tabs: song.tabs,
     })),

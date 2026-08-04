@@ -35,6 +35,7 @@ struct PublicLyricsSongPayload: Codable, Equatable {
     let lyrics: String
     let startsOn: String?
     let sortOrder: Int?
+    let hidden: Bool?
     let updatedAt: String?
     let tabs: PublicLyricsTabsPayload?
 }
@@ -59,6 +60,15 @@ struct PublicLyricsTabNotePayload: Codable, Equatable {
 private struct CachedLyricsPayload: Codable {
     let payload: PublicLyricsPayload
     let eTag: String?
+}
+
+private struct SongVisibilityRequest: Codable {
+    let songs: [SongVisibilityUpdate]
+}
+
+private struct SongVisibilityUpdate: Codable {
+    let id: String
+    let hidden: Bool
 }
 
 final class LyricsRepository {
@@ -101,6 +111,39 @@ final class LyricsRepository {
         }
 
         return SongLoader.loadBundledSongs()
+    }
+
+    func updateSongVisibility(_ updates: [(id: UUID, isHidden: Bool)]) async throws {
+        guard !updates.isEmpty else {
+            return
+        }
+
+        guard let visibilityURL = configuredVisibilityURL() else {
+            throw URLError(.badURL)
+        }
+
+        let body = SongVisibilityRequest(
+            songs: updates.map { update in
+                SongVisibilityUpdate(
+                    id: update.id.uuidString.lowercased(),
+                    hidden: update.isHidden
+                )
+            }
+        )
+
+        var request = URLRequest(url: visibilityURL)
+        request.httpMethod = "PATCH"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(body)
+
+        let (_, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200...299).contains(httpResponse.statusCode) else {
+            throw URLError(.badServerResponse)
+        }
+
+        // Force a fresh public feed on the next load so the updated hidden flags are cached.
+        clearCachedETag()
     }
 
     func loadCachedPayload() -> PublicLyricsPayload? {
@@ -211,7 +254,8 @@ final class LyricsRepository {
                 title: payloadSong.title,
                 lyrics: payloadSong.lyrics.replacingOccurrences(of: "\\n", with: "\n"),
                 startsOn: startsOn?.isEmpty == true ? nil : startsOn,
-                tabs: convertTabs(payloadSong.tabs)
+                tabs: convertTabs(payloadSong.tabs),
+                isHidden: payloadSong.hidden ?? false
             )
         }
     }
@@ -243,5 +287,32 @@ final class LyricsRepository {
         }
         
         return min(max(value, 0), 1)
+    }
+
+    private func configuredVisibilityURL() -> URL? {
+        guard let publicLyricsURL else {
+            return nil
+        }
+
+        var components = URLComponents(url: publicLyricsURL, resolvingAgainstBaseURL: false)
+        let path = components?.path ?? publicLyricsURL.path
+
+        if path.hasSuffix("/api/public/lyrics") {
+            components?.path = String(path.dropLast("/api/public/lyrics".count)) + "/api/songs/visibility"
+        } else {
+            components?.path = "/api/songs/visibility"
+        }
+
+        components?.query = nil
+        components?.fragment = nil
+        return components?.url
+    }
+
+    private func clearCachedETag() {
+        guard let envelope = loadCachedEnvelope() else {
+            return
+        }
+
+        try? cache(envelope.payload, eTag: nil)
     }
 }

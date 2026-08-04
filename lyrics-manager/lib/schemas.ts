@@ -52,11 +52,27 @@ export const songTabsSchema = z
 
 export const songIdSchema = z.string().uuid();
 
+const booleanFromForm = z
+  .union([z.boolean(), z.string(), z.number()])
+  .transform((value) => {
+    if (typeof value === "boolean") {
+      return value;
+    }
+
+    if (typeof value === "number") {
+      return value !== 0;
+    }
+
+    const normalized = value.trim().toLowerCase();
+    return normalized === "true" || normalized === "1" || normalized === "on";
+  });
+
 export const songInputSchema = z.object({
   title: z.string().trim().min(1, "Song title is required."),
   lyrics: z.string().transform((value) => value.replaceAll("\r\n", "\n")),
   startsOn: z.string().trim().default(""),
   sortOrder: z.coerce.number().int().min(0).default(0),
+  hidden: booleanFromForm.default(false),
   tabs: songTabsSchema,
 });
 
@@ -70,12 +86,24 @@ export const songOrderSchema = z.object({
   songIds: z.array(songIdSchema).min(1, "At least one song id is required."),
 });
 
+export const songVisibilitySchema = z.object({
+  songs: z
+    .array(
+      z.object({
+        id: songIdSchema,
+        hidden: booleanFromForm,
+      }),
+    )
+    .min(1, "At least one song visibility update is required."),
+});
+
 export type TabPlacement = z.infer<typeof tabPlacementSchema>;
 export type TabPage = z.infer<typeof tabPageSchema>;
 export type SongTabs = z.infer<typeof songTabsSchema>;
 export type SongInput = z.infer<typeof songInputSchema>;
 export type SongRecord = z.infer<typeof songRecordSchema>;
 export type SongOrderInput = z.infer<typeof songOrderSchema>;
+export type SongVisibilityInput = z.infer<typeof songVisibilitySchema>;
 
 export const EMPTY_SONG_TABS: SongTabs = { version: 1, pages: [] };
 

@@ -21,3 +21,7 @@
 
 - Move the tab note pills into a palette above the iPhone simulator so they can be dragged onto the screen, repositioned, duplicated, and removed by dragging off-screen.
 - Shrink tab pills on the simulator and the iOS lyrics screen so they no longer overlap performance text, and render only placed instances on iOS.
+
+## 2026-08-04 11:10 EDT
+
+- Add a song-level hidden flag (default false) and an iOS show/hide list mode that saves visibility back to the lyrics manager.
