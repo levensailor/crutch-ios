@@ -12,7 +12,7 @@ Author: Jeff Levensailor
 - `**text**` highlights text in pink.
 - `~~text~~` highlights text in green.
 
-The iOS app renders each marker-defined page as a condensed, non-scrolling performance screen. Swipe left/right is available as a fallback if the Bluetooth page turner dies mid-performance.
+The iOS app renders each marker-defined page as a condensed, non-scrolling performance screen. Swipe left/right is available as a fallback if the Bluetooth page turner dies mid-performance. On the last page of a song, next advances to the first page of the next visible setlist song so you can pedal through an entire show.
 
 ## Lyrics Manager
 

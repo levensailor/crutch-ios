@@ -2,7 +2,8 @@ import SwiftUI
 import UIKit
 
 struct LyricsView: View {
-    let song: Song
+    let setlist: [Song]
+    @State private var currentSongIndex: Int
     @State private var currentPageIndex: Int = 0
     @State private var pages: [NSAttributedString] = []
     @Environment(\.dismiss) var dismiss
@@ -15,6 +16,20 @@ struct LyricsView: View {
         CGSize(width: backButtonSize * 1.5, height: backButtonSize * 3)
     }
     
+    private var song: Song {
+        setlist[min(max(currentSongIndex, 0), max(setlist.count - 1, 0))]
+    }
+    
+    init(setlist: [Song], startingAt songID: UUID) {
+        self.setlist = setlist
+        let index = setlist.firstIndex(where: { $0.id == songID }) ?? 0
+        _currentSongIndex = State(initialValue: index)
+    }
+    
+    init(song: Song) {
+        self.init(setlist: [song], startingAt: song.id)
+    }
+    
     var body: some View {
         GeometryReader { geometry in
             ZStack {
@@ -25,7 +40,7 @@ struct LyricsView: View {
                     VStack {
                         Spacer()
                         AttributedText(
-                            attributedString: pages[currentPageIndex],
+                            attributedString: pages[min(currentPageIndex, pages.count - 1)],
                             topRightExclusionSize: topRightControlSize
                         )
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -37,12 +52,12 @@ struct LyricsView: View {
                 
                 tabPillsLayer(in: geometry.size)
                 
-                if pages.count > 1 {
+                if pages.count > 1 || setlist.count > 1 {
                     VStack {
                         Spacer()
                         HStack {
                             Spacer()
-                            Text("\(currentPageIndex + 1)/\(pages.count)")
+                            Text(pageCounterLabel)
                                 .font(.system(size: 14, weight: .bold))
                                 .foregroundColor(.black.opacity(0.45))
                                 .padding(.trailing, 18)
@@ -80,6 +95,16 @@ struct LyricsView: View {
             )
         }
         .navigationBarHidden(true)
+    }
+    
+    private var pageCounterLabel: String {
+        let pageLabel = "\(min(currentPageIndex + 1, max(pages.count, 1)))/\(max(pages.count, 1))"
+        
+        if setlist.count > 1 {
+            return "\(currentSongIndex + 1)/\(setlist.count) · \(pageLabel)"
+        }
+        
+        return pageLabel
     }
     
     private var topRightControl: some View {
@@ -144,19 +169,41 @@ struct LyricsView: View {
             HighlightedText.processFullText(pageText, font: font)
         }
         
-        currentPageIndex = min(currentPageIndex, pages.count - 1)
+        if pages.isEmpty {
+            currentPageIndex = 0
+        } else {
+            currentPageIndex = min(currentPageIndex, pages.count - 1)
+        }
     }
     
     private func goToPreviousPage() {
         if currentPageIndex > 0 {
             currentPageIndex -= 1
+            return
         }
+        
+        guard currentSongIndex > 0 else {
+            return
+        }
+        
+        currentSongIndex -= 1
+        calculatePages()
+        currentPageIndex = max(pages.count - 1, 0)
     }
     
     private func goToNextPage() {
         if currentPageIndex < pages.count - 1 {
             currentPageIndex += 1
+            return
         }
+        
+        guard currentSongIndex < setlist.count - 1 else {
+            return
+        }
+        
+        currentSongIndex += 1
+        currentPageIndex = 0
+        calculatePages()
     }
     
     private func handleSwipe(_ translation: CGSize) {

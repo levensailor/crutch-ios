@@ -130,7 +130,7 @@ struct SongsListView: View {
                 .padding()
                 .frame(maxWidth: .infinity, alignment: .leading)
         } else {
-            NavigationLink(destination: LyricsView(song: song)) {
+            NavigationLink(destination: LyricsView(setlist: displayedSongs, startingAt: song.id)) {
                 Text(song.title)
                     .font(.system(size: 24, weight: .bold))
                     .foregroundColor(.black)

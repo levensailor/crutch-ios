@@ -30,3 +30,7 @@
 
 - Add long-press drag reordering on the iOS setlist (0.5s hold), persisted via `sort_order`.
 - Ensure newly created songs append with the next `sort_order` and always start as `hidden=false`.
+
+## 2026-08-04 11:30 EDT
+
+- Advance from the last lyrics page of a song to the first page of the next setlist song via page turner or swipe.
