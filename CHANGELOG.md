@@ -34,7 +34,3 @@
 ## 2026-08-04 11:30 EDT
 
 - Advance from the last lyrics page of a song to the first page of the next setlist song via page turner or swipe.
-
-## 2026-08-04 11:40 EDT
-
-- Show the current song title in the Dynamic Island via a Live Activity, with marquee scrolling for long titles.

@@ -86,13 +86,6 @@ struct LyricsView: View {
             )
             .onAppear {
                 calculatePages()
-                refreshLiveActivityTitle()
-            }
-            .onChange(of: currentSongIndex) { _, _ in
-                refreshLiveActivityTitle()
-            }
-            .onDisappear {
-                SongTitleLiveActivityController.shared.end()
             }
             .background(
                 KeyCommandHandler(
@@ -181,14 +174,6 @@ struct LyricsView: View {
         } else {
             currentPageIndex = min(currentPageIndex, pages.count - 1)
         }
-    }
-    
-    private func refreshLiveActivityTitle() {
-        SongTitleLiveActivityController.shared.show(
-            title: song.title,
-            songIndex: currentSongIndex + 1,
-            songCount: setlist.count
-        )
     }
     
     private func goToPreviousPage() {
