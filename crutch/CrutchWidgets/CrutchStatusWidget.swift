@@ -49,6 +49,6 @@ struct CrutchStatusWidget: Widget {
         }
         .configurationDisplayName("Crutch")
         .description("Shows that Crutch Live Activities are installed.")
-        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+        .supportedFamilies([.systemSmall])
     }
 }
