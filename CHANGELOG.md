@@ -34,3 +34,7 @@
 ## 2026-08-04 11:30 EDT
 
 - Advance from the last lyrics page of a song to the first page of the next setlist song via page turner or swipe.
+
+## 2026-08-04 11:55 EDT
+
+- Remove Dynamic Island / Live Activity song-title display and the CrutchWidgets extension.
