@@ -6,6 +6,7 @@ import WidgetKit
 struct CrutchWidgetsBundle: WidgetBundle {
     var body: some Widget {
         SongTitleLiveActivity()
+        CrutchStatusWidget()
     }
 }
 

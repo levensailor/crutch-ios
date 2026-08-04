@@ -1,14 +1,18 @@
 import ActivityKit
 import Foundation
+import OSLog
 
 @MainActor
 final class SongTitleLiveActivityController {
     static let shared = SongTitleLiveActivityController()
 
+    private let logger = Logger(subsystem: "levensailor.crutch", category: "LiveActivity")
     private var activity: Activity<SongPerformanceAttributes>?
 
     func show(title: String, songIndex: Int, songCount: Int) {
-        guard ActivityAuthorizationInfo().areActivitiesEnabled else {
+        let auth = ActivityAuthorizationInfo()
+        guard auth.areActivitiesEnabled else {
+            logger.error("Live Activities are disabled system-wide or for this app.")
             return
         }
 
@@ -25,15 +29,22 @@ final class SongTitleLiveActivityController {
             return
         }
 
+        // End any orphaned activities from a previous launch before requesting a new one.
+        for existing in Activity<SongPerformanceAttributes>.activities {
+            Task {
+                await existing.end(nil, dismissalPolicy: .immediate)
+            }
+        }
+
         do {
             activity = try Activity.request(
                 attributes: SongPerformanceAttributes(),
                 content: ActivityContent(state: state, staleDate: nil),
                 pushType: nil
             )
+            logger.info("Started Live Activity for \(title, privacy: .public)")
         } catch {
-            // Live Activities may be disabled by Focus / Low Power / system policy.
-            print("Unable to start song title Live Activity: \(error)")
+            logger.error("Unable to start song title Live Activity: \(error.localizedDescription, privacy: .public)")
         }
     }
 
