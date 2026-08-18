@@ -44,6 +44,18 @@ Editing is intentionally public in this version. Anyone with the URL can change 
 - Public iOS feed: `https://your-project.vercel.app/api/public/lyrics`
 - Login instructions: no login is required for this public-editing version.
 
+## Apple TV App
+
+The tvOS client lives in `crutch-tv/`.
+
+1. Open `crutch-tv/crutch-tv.xcodeproj` in Xcode.
+2. Select the **crutch-tv** scheme and an Apple TV destination (device or simulator).
+3. Press **Run**.
+
+It uses the same public feed as iOS (`https://crutch-ios.vercel.app/api/public/lyrics`), filters out hidden songs, and shows lyrics as three page-columns per screen for the 16:9 TV layout. Navigate the setlist and lyrics with the Siri Remote (clickpad, buttons, and Search/voice). See [`crutch-tv/README.md`](crutch-tv/README.md) for details.
+
+If you change `crutch-tv/project.yml`, regenerate the Xcode project with `xcodegen generate` from `crutch-tv/`.
+
 ## Local Notes
 
 The bundled `crutch/crutch/Resources/lyrics.md` remains the final offline fallback. If the Vercel feed is unavailable, the app uses the last cached good feed, then bundled lyrics.

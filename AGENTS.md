@@ -5,7 +5,8 @@
 - Page-turner next on the last page of a song should open the first page of the next song in setlist order.
 
 ## Learned Workspace Facts
-- The workspace contains a SwiftUI iOS app under `crutch/` and a Next.js Vercel lyrics manager under `lyrics-manager/`.
+- The workspace contains a SwiftUI iOS app under `crutch/`, an Apple TV (tvOS) app under `crutch-tv/`, and a Next.js Vercel lyrics manager under `lyrics-manager/`.
+- `crutch-tv/` is a standalone Xcode project (`crutch-tv.xcodeproj`, regenerate via `xcodegen generate` from `project.yml`) that consumes the same public lyrics feed as iOS and shows lyrics as multi-column pages on 16:9.
 - Lyrics use a stable marker contract: `# Song Title`, `###` lyrics blocks, `#####` page breaks, `**text**` pink highlights, and `~~text~~` green highlights.
 - The iOS app loads remote lyrics through `LyricsRepository`, falling back to the last cached feed and then bundled `crutch/crutch/Resources/lyrics.md`.
 - Bluetooth page-turner support is handled as hardware keyboard arrow-key input through UIKit key commands, with SwiftUI swipe gestures as the fallback; next on the last page advances to the next song in the setlist.

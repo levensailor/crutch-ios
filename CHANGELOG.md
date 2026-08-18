@@ -38,3 +38,7 @@
 ## 2026-08-04 11:55 EDT
 
 - Remove Dynamic Island / Live Activity song-title display and the CrutchWidgets extension.
+
+## 2026-08-18 11:45 EDT
+
+- Add a standalone Apple TV (tvOS 18) lyrics app under `crutch-tv/` that reads the public lyrics feed and renders pages as widescreen columns navigable with the Siri Remote.

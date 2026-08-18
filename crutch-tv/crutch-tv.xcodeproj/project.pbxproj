@@ -1,0 +1,391 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0F61569FC8E06C89BBA00634 /* LyricsPaginator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B9CF539A8EC3E3F93D679FD /* LyricsPaginator.swift */; };
+		2627F8BA032450DAA4FAA4C3 /* HighlightedTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2BF5CBC3FBA7DA7CA3A7980 /* HighlightedTextView.swift */; };
+		2A70F38C5CCA233AF6B1926C /* LyricsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B10181EAFFEEA38FB79E65 /* LyricsRepository.swift */; };
+		30583DD718F171C6326991D7 /* SongsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFC78B126E5113A1D8115739 /* SongsListView.swift */; };
+		31F1636BDDFF8BEE74531857 /* CrutchTVApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 015F9E649DBB269E813D0D12 /* CrutchTVApp.swift */; };
+		334435597A354584ADE30F7F /* Song.swift in Sources */ = {isa = PBXBuildFile; fileRef = 058B2BD583513B3BE84C38A5 /* Song.swift */; };
+		6AB6FF42C29B71A728CE600E /* LyricsColumnsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5522D790AFE62BA9BB54CFF5 /* LyricsColumnsView.swift */; };
+		765AC21A6F8726D75E8F8A97 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB8F34A40BA8E3F86C0D1118 /* Assets.xcassets */; };
+		9060492CB218C644F8F67F93 /* AppConfig.plist in Resources */ = {isa = PBXBuildFile; fileRef = 98C078F9D0F673BCC8862736 /* AppConfig.plist */; };
+		F4DFF13496124D2837E90BF3 /* lyrics.md in Resources */ = {isa = PBXBuildFile; fileRef = 2D26832619AECA6DD29B445F /* lyrics.md */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		015F9E649DBB269E813D0D12 /* CrutchTVApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrutchTVApp.swift; sourceTree = "<group>"; };
+		058B2BD583513B3BE84C38A5 /* Song.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Song.swift; sourceTree = "<group>"; };
+		1B9CF539A8EC3E3F93D679FD /* LyricsPaginator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsPaginator.swift; sourceTree = "<group>"; };
+		2D26832619AECA6DD29B445F /* lyrics.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = lyrics.md; sourceTree = "<group>"; };
+		48DE9D832523167FCE149F6B /* crutch-tv.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "crutch-tv.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		5522D790AFE62BA9BB54CFF5 /* LyricsColumnsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsColumnsView.swift; sourceTree = "<group>"; };
+		98C078F9D0F673BCC8862736 /* AppConfig.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = AppConfig.plist; sourceTree = "<group>"; };
+		AFC78B126E5113A1D8115739 /* SongsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongsListView.swift; sourceTree = "<group>"; };
+		B2BF5CBC3FBA7DA7CA3A7980 /* HighlightedTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightedTextView.swift; sourceTree = "<group>"; };
+		BB8F34A40BA8E3F86C0D1118 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		D2B10181EAFFEEA38FB79E65 /* LyricsRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsRepository.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		47E0B6AC5E608911C28660D6 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				98C078F9D0F673BCC8862736 /* AppConfig.plist */,
+				2D26832619AECA6DD29B445F /* lyrics.md */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		5084A72564FAB9119EAEDB68 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				48DE9D832523167FCE149F6B /* crutch-tv.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		761C258B8A47AD42795E1CAD /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				058B2BD583513B3BE84C38A5 /* Song.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		7ACF373CEE731298FBC5B857 /* crutch-tv */ = {
+			isa = PBXGroup;
+			children = (
+				761C258B8A47AD42795E1CAD /* Models */,
+				47E0B6AC5E608911C28660D6 /* Resources */,
+				DE2823F0B9D1CFC889BA2DCD /* Services */,
+				FDA1F7B25E3DA3816C14D5E6 /* Utilities */,
+				D4B2BC3632709AB00C39AC27 /* Views */,
+				BB8F34A40BA8E3F86C0D1118 /* Assets.xcassets */,
+				015F9E649DBB269E813D0D12 /* CrutchTVApp.swift */,
+			);
+			path = "crutch-tv";
+			sourceTree = "<group>";
+		};
+		B72F5ADC3AEF9D47E0782482 = {
+			isa = PBXGroup;
+			children = (
+				7ACF373CEE731298FBC5B857 /* crutch-tv */,
+				5084A72564FAB9119EAEDB68 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D4B2BC3632709AB00C39AC27 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				5522D790AFE62BA9BB54CFF5 /* LyricsColumnsView.swift */,
+				AFC78B126E5113A1D8115739 /* SongsListView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		DE2823F0B9D1CFC889BA2DCD /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				D2B10181EAFFEEA38FB79E65 /* LyricsRepository.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		FDA1F7B25E3DA3816C14D5E6 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				B2BF5CBC3FBA7DA7CA3A7980 /* HighlightedTextView.swift */,
+				1B9CF539A8EC3E3F93D679FD /* LyricsPaginator.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		D7FA6ED54E10B624B5761999 /* crutch-tv */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F835036BE051337FDEC283AD /* Build configuration list for PBXNativeTarget "crutch-tv" */;
+			buildPhases = (
+				35EFC4C572AD3D212C8672ED /* Sources */,
+				B193373E55ED0328C55BD848 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "crutch-tv";
+			packageProductDependencies = (
+			);
+			productName = "crutch-tv";
+			productReference = 48DE9D832523167FCE149F6B /* crutch-tv.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		823CC54089E885EA26CDC120 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					D7FA6ED54E10B624B5761999 = {
+						DevelopmentTeam = HU4EE3MB4T;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 638FF9DFAD4621FA2DB54E76 /* Build configuration list for PBXProject "crutch-tv" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = B72F5ADC3AEF9D47E0782482;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 5084A72564FAB9119EAEDB68 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D7FA6ED54E10B624B5761999 /* crutch-tv */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B193373E55ED0328C55BD848 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9060492CB218C644F8F67F93 /* AppConfig.plist in Resources */,
+				765AC21A6F8726D75E8F8A97 /* Assets.xcassets in Resources */,
+				F4DFF13496124D2837E90BF3 /* lyrics.md in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		35EFC4C572AD3D212C8672ED /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				31F1636BDDFF8BEE74531857 /* CrutchTVApp.swift in Sources */,
+				2627F8BA032450DAA4FAA4C3 /* HighlightedTextView.swift in Sources */,
+				6AB6FF42C29B71A728CE600E /* LyricsColumnsView.swift in Sources */,
+				0F61569FC8E06C89BBA00634 /* LyricsPaginator.swift in Sources */,
+				2A70F38C5CCA233AF6B1926C /* LyricsRepository.swift in Sources */,
+				334435597A354584ADE30F7F /* Song.swift in Sources */,
+				30583DD718F171C6326991D7 /* SongsListView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		144C9E8A27BDE97DC0BE6C9A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = HU4EE3MB4T;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TVOS_DEPLOYMENT_TARGET = 18.0;
+			};
+			name = Debug;
+		};
+		1A3D1AA552819F3E8A3998A1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_STYLE = Automatic;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Crutch;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = levensailor.crutch.tv;
+				PRODUCT_NAME = "crutch-tv";
+				SDKROOT = appletvos;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 18.0;
+			};
+			name = Debug;
+		};
+		3060C853EDABFA7AF3F1E55F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_STYLE = Automatic;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Crutch;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = levensailor.crutch.tv;
+				PRODUCT_NAME = "crutch-tv";
+				SDKROOT = appletvos;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 18.0;
+			};
+			name = Release;
+		};
+		40F90F4E850D490B89AE4F0E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = HU4EE3MB4T;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TVOS_DEPLOYMENT_TARGET = 18.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		638FF9DFAD4621FA2DB54E76 /* Build configuration list for PBXProject "crutch-tv" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				144C9E8A27BDE97DC0BE6C9A /* Debug */,
+				40F90F4E850D490B89AE4F0E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F835036BE051337FDEC283AD /* Build configuration list for PBXNativeTarget "crutch-tv" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A3D1AA552819F3E8A3998A1 /* Debug */,
+				3060C853EDABFA7AF3F1E55F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 823CC54089E885EA26CDC120 /* Project object */;
+}
