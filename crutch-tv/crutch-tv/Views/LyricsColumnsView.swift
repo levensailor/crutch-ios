@@ -28,6 +28,10 @@ struct LyricsColumnsView: View {
         pages.count == 1
     }
 
+    private var isTwoPageLayout: Bool {
+        pages.count == 2
+    }
+
     private var screenCount: Int {
         if isSinglePageSpread {
             return 1
@@ -118,16 +122,37 @@ struct LyricsColumnsView: View {
             return singlePageLayout(columnWidth: columnWidth, columnHeight: columnHeight)
         }
 
+        if isTwoPageLayout {
+            return twoPageLayout(columnWidth: columnWidth, columnHeight: columnHeight)
+        }
+
         let startPage = screenIndex * columnsPerScreen
         let endPage = min(startPage + columnsPerScreen, pages.count)
         let columns = (startPage..<endPage).map { pageIndex in
             (text: pages[pageIndex], pageIndex: pageIndex)
         }
-        let fontSize = maximizeFontSize(
+        let fontSize = refinedMaximumFontSize(
             for: columns.map(\.text),
             columnWidth: columnWidth,
             columnHeight: columnHeight,
             showsPageLabel: pages.count > 1
+        )
+        return (fontSize, columns)
+    }
+
+    private func twoPageLayout(
+        columnWidth: CGFloat,
+        columnHeight: CGFloat
+    ) -> (fontSize: CGFloat, columns: [(text: String, pageIndex: Int)]) {
+        let columns = [
+            (text: pages[0], pageIndex: 0),
+            (text: pages[1], pageIndex: 1)
+        ]
+        let fontSize = refinedMaximumFontSize(
+            for: [pages[0], pages[1]],
+            columnWidth: columnWidth,
+            columnHeight: columnHeight,
+            showsPageLabel: true
         )
         return (fontSize, columns)
     }
@@ -161,10 +186,18 @@ struct LyricsColumnsView: View {
             }
         }
 
+        bestFont = refineFontSizeUpward(
+            from: bestFont,
+            texts: bestSplit,
+            textWidth: textWidth,
+            textAreaHeight: textAreaHeight
+        )
+
         return (bestFont, bestSplit.map { (text: $0, pageIndex: 0) })
     }
 
-    private func maximizeFontSize(
+    /// Finds the largest font (0.5pt steps) where every column still fits.
+    private func refinedMaximumFontSize(
         for texts: [String],
         columnWidth: CGFloat,
         columnHeight: CGFloat,
@@ -177,23 +210,39 @@ struct LyricsColumnsView: View {
         let textWidth = max(columnWidth - (columnPadding * 2), 1)
         let textAreaHeight = lyricsTextAreaHeight(columnHeight: columnHeight, showsPageLabel: showsPageLabel)
 
-        var low = Int(minimumFontSize)
-        var high = Int(maximumFontSize)
-        var best = minimumFontSize
+        var candidate = maximumFontSize
+        while candidate >= minimumFontSize {
+            let fits = texts.allSatisfy {
+                measuredHeight(for: $0, width: textWidth, fontSize: candidate) <= textAreaHeight
+            }
+            if fits {
+                return candidate
+            }
+            candidate -= 0.5
+        }
 
-        while low <= high {
-            let candidate = CGFloat((low + high) / 2)
+        return minimumFontSize
+    }
+
+    private func refineFontSizeUpward(
+        from fontSize: CGFloat,
+        texts: [String],
+        textWidth: CGFloat,
+        textAreaHeight: CGFloat
+    ) -> CGFloat {
+        var best = fontSize
+        var candidate = fontSize + 0.5
+        while candidate <= maximumFontSize {
             let fits = texts.allSatisfy {
                 measuredHeight(for: $0, width: textWidth, fontSize: candidate) <= textAreaHeight
             }
             if fits {
                 best = candidate
-                low = Int(candidate) + 1
+                candidate += 0.5
             } else {
-                high = Int(candidate) - 1
+                break
             }
         }
-
         return best
     }
 
@@ -280,20 +329,18 @@ struct LyricsColumnsView: View {
         let visible = text
             .replacingOccurrences(of: "**", with: "")
             .replacingOccurrences(of: "~~", with: "")
-        let font = UIFont.systemFont(ofSize: fontSize, weight: .bold)
-        let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.lineBreakMode = .byWordWrapping
-        let attributes: [NSAttributedString.Key: Any] = [
-            .font: font,
-            .paragraphStyle: paragraphStyle
-        ]
-        let rect = (visible as NSString).boundingRect(
-            with: CGSize(width: width, height: .greatestFiniteMagnitude),
-            options: [.usesLineFragmentOrigin, .usesFontLeading],
-            attributes: attributes,
-            context: nil
+
+        let label = UILabel()
+        label.numberOfLines = 0
+        label.lineBreakMode = .byWordWrapping
+        label.font = UIFont.systemFont(ofSize: fontSize, weight: .bold)
+        label.text = visible
+
+        return ceil(
+            label.sizeThatFits(
+                CGSize(width: width, height: .greatestFiniteMagnitude)
+            ).height
         )
-        return ceil(rect.height)
     }
 
     private var header: some View {

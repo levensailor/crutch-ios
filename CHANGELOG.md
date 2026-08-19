@@ -58,3 +58,7 @@
 ## 2026-08-19 14:40 EDT
 
 - Maximize Apple TV lyrics font size per screen with UIKit text measurement and height-balanced column splits that minimize bottom whitespace.
+
+## 2026-08-19 14:48 EDT
+
+- Grow two-page Apple TV lyrics to the largest 0.5pt font that fills both columns using UILabel sizing.
