@@ -52,7 +52,7 @@ The tvOS client lives in `crutch-tv/`.
 2. Select the **crutch-tv** scheme and an Apple TV destination (device or simulator).
 3. Press **Run**.
 
-It uses the same public feed as iOS (`https://crutch-ios.vercel.app/api/public/lyrics`), filters out hidden songs, and shows lyrics as three page-columns per screen for the 16:9 TV layout. Navigate the setlist and lyrics with the Siri Remote (clickpad, buttons, and Search/voice). See [`crutch-tv/README.md`](crutch-tv/README.md) for details.
+It uses the same public feed as iOS (`https://crutch-ios.vercel.app/api/public/lyrics`), filters out hidden songs, and shows lyrics with adaptive column widths: one full-width column for single-page songs, two equal columns for two-page songs, and three columns per screen (with pagination) for longer songs. Navigate the setlist and lyrics with the Siri Remote (clickpad, buttons, and Search/voice). See [`crutch-tv/README.md`](crutch-tv/README.md) for details.
 
 If you change `crutch-tv/project.yml`, regenerate the Xcode project with `xcodegen generate` from `crutch-tv/`.
 

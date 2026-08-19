@@ -3,15 +3,36 @@ import SwiftUI
 struct LyricsColumnsView: View {
     let song: Song
 
-    private let columnsPerScreen = 3
-    private let baseFontSize: CGFloat = 42
     private let minimumFontSize: CGFloat = 28
 
     @State private var pages: [String] = []
     @State private var selectedScreen = 0
 
+    /// 1-page songs use one full-width column; 2-page songs use two; 3+ paginate in threes.
+    private var columnsPerScreen: Int {
+        switch pages.count {
+        case 0, 1:
+            return 1
+        case 2:
+            return 2
+        default:
+            return 3
+        }
+    }
+
     private var screenCount: Int {
         max(1, Int(ceil(Double(max(pages.count, 1)) / Double(columnsPerScreen))))
+    }
+
+    private var baseFontSize: CGFloat {
+        switch columnsPerScreen {
+        case 1:
+            return 52
+        case 2:
+            return 46
+        default:
+            return 42
+        }
     }
 
     var body: some View {
@@ -22,7 +43,11 @@ struct LyricsColumnsView: View {
             let headerHeight: CGFloat = 72
             let usableWidth = geometry.size.width - (horizontalPadding * 2)
             let usableHeight = geometry.size.height - verticalPadding * 2 - headerHeight
-            let columnWidth = (usableWidth - columnSpacing * CGFloat(columnsPerScreen - 1)) / CGFloat(columnsPerScreen)
+            let columnWidth = columnWidth(
+                usableWidth: usableWidth,
+                columnSpacing: columnSpacing,
+                columns: columnsPerScreen
+            )
             let fontSize = fittedFontSize(
                 for: pages,
                 columnWidth: columnWidth,
@@ -34,24 +59,13 @@ struct LyricsColumnsView: View {
 
                 TabView(selection: $selectedScreen) {
                     ForEach(0..<screenCount, id: \.self) { screenIndex in
-                        HStack(alignment: .top, spacing: columnSpacing) {
-                            ForEach(0..<columnsPerScreen, id: \.self) { columnIndex in
-                                let pageIndex = screenIndex * columnsPerScreen + columnIndex
-                                if pageIndex < pages.count {
-                                    pageColumn(
-                                        text: pages[pageIndex],
-                                        pageIndex: pageIndex,
-                                        width: columnWidth,
-                                        height: usableHeight,
-                                        fontSize: fontSize
-                                    )
-                                } else {
-                                    Color.clear
-                                        .frame(width: columnWidth, height: usableHeight)
-                                }
-                            }
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                        screenRow(
+                            screenIndex: screenIndex,
+                            columnWidth: columnWidth,
+                            columnHeight: usableHeight,
+                            columnSpacing: columnSpacing,
+                            fontSize: fontSize
+                        )
                         .tag(screenIndex)
                         .focusable(true)
                     }
@@ -68,6 +82,36 @@ struct LyricsColumnsView: View {
             pages = LyricsPaginator.splitByPageMarkers(song.lyrics)
             selectedScreen = 0
         }
+    }
+
+    @ViewBuilder
+    private func screenRow(
+        screenIndex: Int,
+        columnWidth: CGFloat,
+        columnHeight: CGFloat,
+        columnSpacing: CGFloat,
+        fontSize: CGFloat
+    ) -> some View {
+        let startPage = screenIndex * columnsPerScreen
+        let endPage = min(startPage + columnsPerScreen, pages.count)
+        let pageIndices = startPage..<endPage
+
+        HStack(alignment: .top, spacing: columnSpacing) {
+            ForEach(Array(pageIndices), id: \.self) { pageIndex in
+                pageColumn(
+                    text: pages[pageIndex],
+                    pageIndex: pageIndex,
+                    width: columnWidth,
+                    height: columnHeight,
+                    fontSize: fontSize
+                )
+            }
+
+            if pageIndices.count < columnsPerScreen {
+                Spacer(minLength: 0)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
     private var header: some View {
@@ -94,9 +138,22 @@ struct LyricsColumnsView: View {
     }
 
     private var screenLabel: String {
+        if pages.count <= columnsPerScreen {
+            return "Page \(pages.count == 1 ? "1" : "1–\(pages.count)") / \(max(pages.count, 1))"
+        }
+
         let startPage = selectedScreen * columnsPerScreen + 1
-        let endPage = min((selectedScreen + 1) * columnsPerScreen, max(pages.count, 1))
-        return "Pages \(startPage)–\(endPage) / \(max(pages.count, 1))"
+        let endPage = min((selectedScreen + 1) * columnsPerScreen, pages.count)
+        return "Pages \(startPage)–\(endPage) / \(pages.count)"
+    }
+
+    private func columnWidth(usableWidth: CGFloat, columnSpacing: CGFloat, columns: Int) -> CGFloat {
+        guard columns > 0 else {
+            return usableWidth
+        }
+
+        let totalSpacing = columnSpacing * CGFloat(max(columns - 1, 0))
+        return (usableWidth - totalSpacing) / CGFloat(columns)
     }
 
     private func pageColumn(
@@ -107,9 +164,11 @@ struct LyricsColumnsView: View {
         fontSize: CGFloat
     ) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Page \(pageIndex + 1)")
-                .font(.system(size: 18, weight: .bold))
-                .foregroundStyle(.white.opacity(0.45))
+            if pages.count > 1 {
+                Text("Page \(pageIndex + 1)")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundStyle(.white.opacity(0.45))
+            }
 
             HighlightedLyricsText(text: text, fontSize: fontSize)
                 .foregroundStyle(.white)
