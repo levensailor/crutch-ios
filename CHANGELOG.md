@@ -46,3 +46,7 @@
 ## 2026-08-19 13:59 EDT
 
 - Adapt Apple TV lyrics column widths by page count: one full-width column for single-page songs, two equal columns for two-page songs, and three columns per screen with pagination for longer songs.
+
+## 2026-08-19 14:29 EDT
+
+- Add the Croatoa pink yin-yang artwork as the Apple TV app icon via Brand Assets image stacks.
