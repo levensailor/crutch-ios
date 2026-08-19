@@ -62,3 +62,7 @@
 ## 2026-08-19 14:48 EDT
 
 - Grow two-page Apple TV lyrics to the largest 0.5pt font that fills both columns using UILabel sizing.
+
+## 2026-08-19 15:18 EDT
+
+- Precompute Apple TV lyrics layout off the main thread to fix slow song open after font sizing changes.

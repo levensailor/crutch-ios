@@ -16,6 +16,7 @@
 		6AB6FF42C29B71A728CE600E /* LyricsColumnsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5522D790AFE62BA9BB54CFF5 /* LyricsColumnsView.swift */; };
 		765AC21A6F8726D75E8F8A97 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB8F34A40BA8E3F86C0D1118 /* Assets.xcassets */; };
 		9060492CB218C644F8F67F93 /* AppConfig.plist in Resources */ = {isa = PBXBuildFile; fileRef = 98C078F9D0F673BCC8862736 /* AppConfig.plist */; };
+		B5411C8843CE540BA1FBBAE3 /* LyricsLayoutEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA08F384B7B90BDE31B8015B /* LyricsLayoutEngine.swift */; };
 		F4DFF13496124D2837E90BF3 /* lyrics.md in Resources */ = {isa = PBXBuildFile; fileRef = 2D26832619AECA6DD29B445F /* lyrics.md */; };
 /* End PBXBuildFile section */
 
@@ -31,6 +32,7 @@
 		B2BF5CBC3FBA7DA7CA3A7980 /* HighlightedTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightedTextView.swift; sourceTree = "<group>"; };
 		BB8F34A40BA8E3F86C0D1118 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D2B10181EAFFEEA38FB79E65 /* LyricsRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsRepository.swift; sourceTree = "<group>"; };
+		FA08F384B7B90BDE31B8015B /* LyricsLayoutEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsLayoutEngine.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -102,6 +104,7 @@
 			isa = PBXGroup;
 			children = (
 				B2BF5CBC3FBA7DA7CA3A7980 /* HighlightedTextView.swift */,
+				FA08F384B7B90BDE31B8015B /* LyricsLayoutEngine.swift */,
 				1B9CF539A8EC3E3F93D679FD /* LyricsPaginator.swift */,
 			);
 			path = Utilities;
@@ -183,6 +186,7 @@
 				31F1636BDDFF8BEE74531857 /* CrutchTVApp.swift in Sources */,
 				2627F8BA032450DAA4FAA4C3 /* HighlightedTextView.swift in Sources */,
 				6AB6FF42C29B71A728CE600E /* LyricsColumnsView.swift in Sources */,
+				B5411C8843CE540BA1FBBAE3 /* LyricsLayoutEngine.swift in Sources */,
 				0F61569FC8E06C89BBA00634 /* LyricsPaginator.swift in Sources */,
 				2A70F38C5CCA233AF6B1926C /* LyricsRepository.swift in Sources */,
 				334435597A354584ADE30F7F /* Song.swift in Sources */,
