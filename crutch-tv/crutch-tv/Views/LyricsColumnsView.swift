@@ -1,9 +1,13 @@
 import SwiftUI
+import UIKit
 
 struct LyricsColumnsView: View {
     let song: Song
 
     private let minimumFontSize: CGFloat = 28
+    private let maximumFontSize: CGFloat = 120
+    private let columnPadding: CGFloat = 9
+    private let pageLabelOverhead: CGFloat = 28
 
     @State private var pages: [String] = []
     @State private var selectedScreen = 0
@@ -31,18 +35,6 @@ struct LyricsColumnsView: View {
         return max(1, Int(ceil(Double(max(pages.count, 1)) / Double(columnsPerScreen))))
     }
 
-    private var baseFontSize: CGFloat {
-        if isSinglePageSpread {
-            return 58
-        }
-        switch columnsPerScreen {
-        case 2:
-            return 46
-        default:
-            return 42
-        }
-    }
-
     var body: some View {
         GeometryReader { geometry in
             let horizontalPadding: CGFloat = 24
@@ -56,11 +48,6 @@ struct LyricsColumnsView: View {
                 columnSpacing: columnSpacing,
                 columns: columnsPerScreen
             )
-            let fontSize = fittedFontSize(
-                for: fontSizingTexts,
-                columnWidth: columnWidth,
-                columnHeight: usableHeight
-            )
 
             VStack(alignment: .leading, spacing: 16) {
                 header
@@ -71,8 +58,7 @@ struct LyricsColumnsView: View {
                             screenIndex: screenIndex,
                             columnWidth: columnWidth,
                             columnHeight: usableHeight,
-                            columnSpacing: columnSpacing,
-                            fontSize: fontSize
+                            columnSpacing: columnSpacing
                         )
                         .tag(screenIndex)
                         .focusable(true)
@@ -97,72 +83,217 @@ struct LyricsColumnsView: View {
         screenIndex: Int,
         columnWidth: CGFloat,
         columnHeight: CGFloat,
-        columnSpacing: CGFloat,
-        fontSize: CGFloat
+        columnSpacing: CGFloat
     ) -> some View {
-        let columns = columnContents(for: screenIndex)
+        let layout = screenLayout(
+            screenIndex: screenIndex,
+            columnWidth: columnWidth,
+            columnHeight: columnHeight
+        )
 
         HStack(alignment: .top, spacing: columnSpacing) {
-            ForEach(Array(columns.enumerated()), id: \.offset) { _, column in
+            ForEach(Array(layout.columns.enumerated()), id: \.offset) { _, column in
                 pageColumn(
                     text: column.text,
                     pageIndex: column.pageIndex,
                     width: columnWidth,
                     height: columnHeight,
-                    fontSize: fontSize
+                    fontSize: layout.fontSize
                 )
             }
 
-            if columns.count < columnsPerScreen {
+            if layout.columns.count < columnsPerScreen {
                 Spacer(minLength: 0)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
-    private var fontSizingTexts: [String] {
+    private func screenLayout(
+        screenIndex: Int,
+        columnWidth: CGFloat,
+        columnHeight: CGFloat
+    ) -> (fontSize: CGFloat, columns: [(text: String, pageIndex: Int)]) {
         if isSinglePageSpread {
-            return splitAcrossColumns(pages[0], columns: columnsPerScreen)
-        }
-        return pages
-    }
-
-    private func columnContents(for screenIndex: Int) -> [(text: String, pageIndex: Int)] {
-        if isSinglePageSpread {
-            return splitAcrossColumns(pages[0], columns: columnsPerScreen)
-                .map { (text: $0, pageIndex: 0) }
+            return singlePageLayout(columnWidth: columnWidth, columnHeight: columnHeight)
         }
 
         let startPage = screenIndex * columnsPerScreen
         let endPage = min(startPage + columnsPerScreen, pages.count)
-        return (startPage..<endPage).map { pageIndex in
+        let columns = (startPage..<endPage).map { pageIndex in
             (text: pages[pageIndex], pageIndex: pageIndex)
         }
+        let fontSize = maximizeFontSize(
+            for: columns.map(\.text),
+            columnWidth: columnWidth,
+            columnHeight: columnHeight,
+            showsPageLabel: pages.count > 1
+        )
+        return (fontSize, columns)
     }
 
-    private func splitAcrossColumns(_ text: String, columns: Int) -> [String] {
-        guard columns > 1 else {
-            return [text]
-        }
+    private func singlePageLayout(
+        columnWidth: CGFloat,
+        columnHeight: CGFloat
+    ) -> (fontSize: CGFloat, columns: [(text: String, pageIndex: Int)]) {
+        let splittableLines = splittableLineGroups(from: pages[0])
+        let textWidth = max(columnWidth - (columnPadding * 2), 1)
+        let textAreaHeight = lyricsTextAreaHeight(columnHeight: columnHeight, showsPageLabel: false)
 
-        let lines = text.components(separatedBy: .newlines)
-        guard lines.count > 1 else {
-            return Array(repeating: text, count: columns)
-        }
+        var bestFont = minimumFontSize
+        var bestSplit = defaultTwoColumnSplit(for: pages[0])
 
-        var result = Array(repeating: [String](), count: columns)
-        let targetLines = Int(ceil(Double(lines.count) / Double(columns)))
-        var lineIndex = 0
-
-        for column in 0..<columns {
-            let end = min(lineIndex + targetLines, lines.count)
-            if lineIndex < end {
-                result[column] = Array(lines[lineIndex..<end])
-                lineIndex = end
+        var low = Int(minimumFontSize)
+        var high = Int(maximumFontSize)
+        while low <= high {
+            let candidate = CGFloat((low + high) / 2)
+            if let split = optimalTwoColumnSplit(
+                lines: splittableLines,
+                fontSize: candidate,
+                textWidth: textWidth,
+                textAreaHeight: textAreaHeight
+            ) {
+                bestFont = candidate
+                bestSplit = split
+                low = Int(candidate) + 1
+            } else {
+                high = Int(candidate) - 1
             }
         }
 
-        return result.map { $0.joined(separator: "\n") }
+        return (bestFont, bestSplit.map { (text: $0, pageIndex: 0) })
+    }
+
+    private func maximizeFontSize(
+        for texts: [String],
+        columnWidth: CGFloat,
+        columnHeight: CGFloat,
+        showsPageLabel: Bool
+    ) -> CGFloat {
+        guard !texts.isEmpty else {
+            return minimumFontSize
+        }
+
+        let textWidth = max(columnWidth - (columnPadding * 2), 1)
+        let textAreaHeight = lyricsTextAreaHeight(columnHeight: columnHeight, showsPageLabel: showsPageLabel)
+
+        var low = Int(minimumFontSize)
+        var high = Int(maximumFontSize)
+        var best = minimumFontSize
+
+        while low <= high {
+            let candidate = CGFloat((low + high) / 2)
+            let fits = texts.allSatisfy {
+                measuredHeight(for: $0, width: textWidth, fontSize: candidate) <= textAreaHeight
+            }
+            if fits {
+                best = candidate
+                low = Int(candidate) + 1
+            } else {
+                high = Int(candidate) - 1
+            }
+        }
+
+        return best
+    }
+
+    /// Chooses a split that fits and leaves the least bottom slack in the last column.
+    private func optimalTwoColumnSplit(
+        lines: [String],
+        fontSize: CGFloat,
+        textWidth: CGFloat,
+        textAreaHeight: CGFloat
+    ) -> [String]? {
+        guard lines.count > 1 else {
+            let text = lines.first ?? ""
+            let height = measuredHeight(for: text, width: textWidth, fontSize: fontSize)
+            return height <= textAreaHeight ? [text, ""] : nil
+        }
+
+        var bestSplit: [String]?
+        var bestLastSlack = CGFloat.greatestFiniteMagnitude
+
+        for splitIndex in 1..<lines.count {
+            let left = lines[0..<splitIndex].joined(separator: "\n")
+            let right = lines[splitIndex...].joined(separator: "\n")
+            let leftHeight = measuredHeight(for: left, width: textWidth, fontSize: fontSize)
+            let rightHeight = measuredHeight(for: right, width: textWidth, fontSize: fontSize)
+
+            guard leftHeight <= textAreaHeight, rightHeight <= textAreaHeight else {
+                continue
+            }
+
+            let lastSlack = textAreaHeight - rightHeight
+            if lastSlack < bestLastSlack {
+                bestLastSlack = lastSlack
+                bestSplit = [left, right]
+            }
+        }
+
+        return bestSplit
+    }
+
+    private func splittableLineGroups(from text: String) -> [String] {
+        let lines = text.components(separatedBy: .newlines)
+        guard lines.count <= 1 else {
+            return lines
+        }
+
+        let words = text.split(whereSeparator: \.isWhitespace)
+        guard words.count > 1 else {
+            return lines.isEmpty ? [""] : lines
+        }
+
+        let midpoint = words.count / 2
+        return [
+            words[..<midpoint].joined(separator: " "),
+            words[midpoint...].joined(separator: " ")
+        ]
+    }
+
+    private func defaultTwoColumnSplit(for text: String) -> [String] {
+        let lines = splittableLineGroups(from: text)
+        guard lines.count > 1 else {
+            return [text, ""]
+        }
+
+        let midpoint = lines.count / 2
+        return [
+            lines[..<midpoint].joined(separator: "\n"),
+            lines[midpoint...].joined(separator: "\n")
+        ]
+    }
+
+    private func lyricsTextAreaHeight(columnHeight: CGFloat, showsPageLabel: Bool) -> CGFloat {
+        var overhead = columnPadding * 2
+        if showsPageLabel {
+            overhead += pageLabelOverhead
+        }
+        return max(columnHeight - overhead, 1)
+    }
+
+    private func measuredHeight(for text: String, width: CGFloat, fontSize: CGFloat) -> CGFloat {
+        guard !text.isEmpty else {
+            return 0
+        }
+
+        let visible = text
+            .replacingOccurrences(of: "**", with: "")
+            .replacingOccurrences(of: "~~", with: "")
+        let font = UIFont.systemFont(ofSize: fontSize, weight: .bold)
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineBreakMode = .byWordWrapping
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: font,
+            .paragraphStyle: paragraphStyle
+        ]
+        let rect = (visible as NSString).boundingRect(
+            with: CGSize(width: width, height: .greatestFiniteMagnitude),
+            options: [.usesLineFragmentOrigin, .usesFontLeading],
+            attributes: attributes,
+            context: nil
+        )
+        return ceil(rect.height)
     }
 
     private var header: some View {
@@ -224,7 +355,7 @@ struct LyricsColumnsView: View {
             HighlightedLyricsText(text: text, fontSize: fontSize)
                 .foregroundStyle(.white)
         }
-        .padding(9)
+        .padding(columnPadding)
         .frame(width: width, height: height, alignment: .topLeading)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -234,40 +365,5 @@ struct LyricsColumnsView: View {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .stroke(Color.white.opacity(0.12), lineWidth: 1)
         )
-    }
-
-    private func fittedFontSize(for pages: [String], columnWidth: CGFloat, columnHeight: CGFloat) -> CGFloat {
-        guard columnWidth > 0, columnHeight > 0 else {
-            return baseFontSize
-        }
-
-        var size = baseFontSize
-        while size > minimumFontSize {
-            let fitsAll = pages.allSatisfy { page in
-                estimatedHeight(for: page, width: columnWidth - 18, fontSize: size) <= columnHeight - 24
-            }
-            if fitsAll {
-                return size
-            }
-            size -= 2
-        }
-        return minimumFontSize
-    }
-
-    private func estimatedHeight(for text: String, width: CGFloat, fontSize: CGFloat) -> CGFloat {
-        let lines = text.components(separatedBy: .newlines)
-        let averageCharsPerLine = max(Int(width / (fontSize * 0.55)), 8)
-        var totalLines = 0
-
-        for line in lines {
-            let visible = line
-                .replacingOccurrences(of: "**", with: "")
-                .replacingOccurrences(of: "~~", with: "")
-            let length = max(visible.count, 1)
-            totalLines += Int(ceil(Double(length) / Double(averageCharsPerLine)))
-        }
-
-        let lineHeight = fontSize * 1.22
-        return CGFloat(totalLines) * lineHeight
     }
 }
