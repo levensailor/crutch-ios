@@ -15,7 +15,7 @@ The app loads songs from `https://crutch-ios.vercel.app/api/public/lyrics`. If t
 ## Remote navigation
 
 - **Songs list:** clickpad / arrows to move, Select to open a song. Use Search (Siri Remote voice or text) to filter titles.
-- **Lyrics:** pages render as **1, 2, or 3 equal-width columns** depending on page count (1 page = full width, 2 pages = half width each, 3+ = three columns per screen). Swipe or scroll the clickpad left/right to paginate when there are more than three pages. Menu returns to the setlist.
+- **Lyrics:** pages render as **2 or 3 equal-width columns** depending on page count (1 page spreads across two larger-font columns, 2 pages = one page per column, 3+ = three columns per screen with pagination). Swipe or scroll the clickpad left/right to paginate when there are more than three pages. Menu returns to the setlist.
 
 ## Hidden songs
 

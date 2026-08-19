@@ -8,11 +8,11 @@ struct LyricsColumnsView: View {
     @State private var pages: [String] = []
     @State private var selectedScreen = 0
 
-    /// 1-page songs use one full-width column; 2-page songs use two; 3+ paginate in threes.
+    /// Single-page songs spread across two columns; 2-page songs use two; 3+ paginate in threes.
     private var columnsPerScreen: Int {
         switch pages.count {
         case 0, 1:
-            return 1
+            return 2
         case 2:
             return 2
         default:
@@ -20,14 +20,22 @@ struct LyricsColumnsView: View {
         }
     }
 
+    private var isSinglePageSpread: Bool {
+        pages.count == 1
+    }
+
     private var screenCount: Int {
-        max(1, Int(ceil(Double(max(pages.count, 1)) / Double(columnsPerScreen))))
+        if isSinglePageSpread {
+            return 1
+        }
+        return max(1, Int(ceil(Double(max(pages.count, 1)) / Double(columnsPerScreen))))
     }
 
     private var baseFontSize: CGFloat {
+        if isSinglePageSpread {
+            return 58
+        }
         switch columnsPerScreen {
-        case 1:
-            return 52
         case 2:
             return 46
         default:
@@ -37,9 +45,9 @@ struct LyricsColumnsView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            let horizontalPadding: CGFloat = 48
-            let verticalPadding: CGFloat = 36
-            let columnSpacing: CGFloat = 28
+            let horizontalPadding: CGFloat = 24
+            let verticalPadding: CGFloat = 18
+            let columnSpacing: CGFloat = 14
             let headerHeight: CGFloat = 72
             let usableWidth = geometry.size.width - (horizontalPadding * 2)
             let usableHeight = geometry.size.height - verticalPadding * 2 - headerHeight
@@ -49,7 +57,7 @@ struct LyricsColumnsView: View {
                 columns: columnsPerScreen
             )
             let fontSize = fittedFontSize(
-                for: pages,
+                for: fontSizingTexts,
                 columnWidth: columnWidth,
                 columnHeight: usableHeight
             )
@@ -92,26 +100,69 @@ struct LyricsColumnsView: View {
         columnSpacing: CGFloat,
         fontSize: CGFloat
     ) -> some View {
-        let startPage = screenIndex * columnsPerScreen
-        let endPage = min(startPage + columnsPerScreen, pages.count)
-        let pageIndices = startPage..<endPage
+        let columns = columnContents(for: screenIndex)
 
         HStack(alignment: .top, spacing: columnSpacing) {
-            ForEach(Array(pageIndices), id: \.self) { pageIndex in
+            ForEach(Array(columns.enumerated()), id: \.offset) { _, column in
                 pageColumn(
-                    text: pages[pageIndex],
-                    pageIndex: pageIndex,
+                    text: column.text,
+                    pageIndex: column.pageIndex,
                     width: columnWidth,
                     height: columnHeight,
                     fontSize: fontSize
                 )
             }
 
-            if pageIndices.count < columnsPerScreen {
+            if columns.count < columnsPerScreen {
                 Spacer(minLength: 0)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    private var fontSizingTexts: [String] {
+        if isSinglePageSpread {
+            return splitAcrossColumns(pages[0], columns: columnsPerScreen)
+        }
+        return pages
+    }
+
+    private func columnContents(for screenIndex: Int) -> [(text: String, pageIndex: Int)] {
+        if isSinglePageSpread {
+            return splitAcrossColumns(pages[0], columns: columnsPerScreen)
+                .map { (text: $0, pageIndex: 0) }
+        }
+
+        let startPage = screenIndex * columnsPerScreen
+        let endPage = min(startPage + columnsPerScreen, pages.count)
+        return (startPage..<endPage).map { pageIndex in
+            (text: pages[pageIndex], pageIndex: pageIndex)
+        }
+    }
+
+    private func splitAcrossColumns(_ text: String, columns: Int) -> [String] {
+        guard columns > 1 else {
+            return [text]
+        }
+
+        let lines = text.components(separatedBy: .newlines)
+        guard lines.count > 1 else {
+            return Array(repeating: text, count: columns)
+        }
+
+        var result = Array(repeating: [String](), count: columns)
+        let targetLines = Int(ceil(Double(lines.count) / Double(columns)))
+        var lineIndex = 0
+
+        for column in 0..<columns {
+            let end = min(lineIndex + targetLines, lines.count)
+            if lineIndex < end {
+                result[column] = Array(lines[lineIndex..<end])
+                lineIndex = end
+            }
+        }
+
+        return result.map { $0.joined(separator: "\n") }
     }
 
     private var header: some View {
@@ -173,7 +224,7 @@ struct LyricsColumnsView: View {
             HighlightedLyricsText(text: text, fontSize: fontSize)
                 .foregroundStyle(.white)
         }
-        .padding(18)
+        .padding(9)
         .frame(width: width, height: height, alignment: .topLeading)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -193,7 +244,7 @@ struct LyricsColumnsView: View {
         var size = baseFontSize
         while size > minimumFontSize {
             let fitsAll = pages.allSatisfy { page in
-                estimatedHeight(for: page, width: columnWidth - 36, fontSize: size) <= columnHeight - 48
+                estimatedHeight(for: page, width: columnWidth - 18, fontSize: size) <= columnHeight - 24
             }
             if fitsAll {
                 return size

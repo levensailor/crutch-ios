@@ -50,3 +50,7 @@
 ## 2026-08-19 14:29 EDT
 
 - Add the Croatoa pink yin-yang artwork as the Apple TV app icon via Brand Assets image stacks.
+
+## 2026-08-19 14:35 EDT
+
+- Halve Apple TV lyrics padding and spread single-page songs across two larger-font columns.
